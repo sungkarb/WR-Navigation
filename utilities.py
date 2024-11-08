@@ -18,4 +18,16 @@ Args:
           a point with coordinates (x, y, z) 
 """
 def map_points(path: list[list]):
-    raise NotImplementedError
+    img = mpimg.imread('MDRS-Map.png')
+    plt.imshow(img)
+
+    points = path # [[50, 100],[100, 150],[150,200]] - Example points
+
+    x_points = [point[0] for point in points]
+    y_points = [point[1] for point in points]
+    #Z value is ignored
+
+    # Plot the points on top of the image
+    plt.scatter(x_points, y_points, color='red', s=20, marker='o')  # Red points with size 20
+
+    plt.show()
