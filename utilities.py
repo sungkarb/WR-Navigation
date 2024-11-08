@@ -10,6 +10,9 @@ Returns:
 def convert_coordinates(point: list, crs) -> list:
     raise NotImplementedError
 
+
+
+
 """Plot the path on the map of Mars Desert Research Station. 
    Account for differences in geographical coordinate systems.    
    
