@@ -19,8 +19,6 @@ path_points_path = os.path.join(data_dir, f"{path_points_name}.csv")
 path_path = os.path.join(data_dir, f"{path_name}.csv")
 subsets_path = os.path.join(subsets_dir, f"{subset_name}")
 
-
-
 # Hyperparameters and variables
 
 # number of edges per node in the graph
@@ -71,10 +69,8 @@ class AStar:
         return abs(math.degrees(math.acos(abs(z2 - z1) / v_norm)))
     
     def create_subsets(self, points: pd.DataFrame, start: pd.DataFrame, end: pd.DataFrame):
-        points_per_subset = len(points) // resolution  # Number of points per subset based on resolution
-
-        # output_dir = Path(subsets_path)
-        # output_dir.mkdir(exist_ok=True)
+        # Number of points per subset based on resolution
+        points_per_subset = len(points) // resolution
 
         for i in range(subsets):
             # Select the subset of points with points_per_subset points
@@ -85,10 +81,6 @@ class AStar:
 
             # add it to new giant variable that is the array of all subsets
             giant.append(sub)
-            
-            # Save the subset to a CSV file
-            #filepath = output_dir / f"{subset_name}{i}.csv"
-            #sub.to_csv(filepath, index=False)
 
     # heuristic function: greater return value means greater cost for the path (best path has low cost)
     def heur(self, x1, y1, z1, x2, y2, z2):
