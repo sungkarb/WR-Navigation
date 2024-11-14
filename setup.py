@@ -51,14 +51,4 @@ sorted_points = sorted_points.reset_index(drop=True)
 print("Writing points . . .")
 sorted_points.to_csv(p, index=False)
 
-print("Randomizing points . . .")
-random_points_path = os.path.join(p2, f"{random_points_name}.csv")
-# remove duplicates
-sorted_points.drop_duplicates(inplace=True)
-# randomize the order of the points
-sorted_points.sample(frac=1).reset_index(drop=True)
-
-# write the new points to a csv file
-sorted_points.to_csv(random_points_path, index=False)
-
 print("Done!\n")

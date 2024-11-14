@@ -43,24 +43,23 @@ class AStar:
     Args:
         data: numpy array with dimensions (n x 3)
     """
-    def __init__(self, data: np.ndarray):
+    def __init__(self, data: np.ndarray) -> None:
         # process data
         points = pd.DataFrame(data, columns=['x', 'y', 'z'])
         points.drop_duplicates(inplace=True)
         points.sample(frac=1).reset_index(drop=True).to_csv(random_points_path, index=False)
 
     # helper methods
-    def slope_angle(self, x1, y1, z1, x2, y2, z2):
+    def slope_angle(self, x1, y1, z1, x2, y2, z2) -> float:
         # v dot w = |v||w|cos(theta)
         # theta = arccos(v dot w / |v||w|)
         v = np.array([(x2 - x1), (y2 - y1), (z2 - z1)])
-        w = np.array([0, 0, 1])
         v_norm = np.linalg.norm(v)
         if v_norm == 0:
             return 0
         return abs(math.degrees(math.acos(abs(z2 - z1) / v_norm)))
     
-    def create_subsets(self, points: pd.DataFrame, start: pd.DataFrame, end: pd.DataFrame):
+    def create_subsets(self, points: pd.DataFrame, start: pd.DataFrame, end: pd.DataFrame) -> None:
         # Number of points per subset based on resolution
         points_per_subset = len(points) // resolution
 
@@ -75,11 +74,11 @@ class AStar:
             giant.append(sub)
 
     # heuristic function: greater return value means greater cost for the path (best path has low cost)
-    def heur(self, x1, y1, z1, x2, y2, z2):
+    def heur(self, x1, y1, z1, x2, y2, z2) -> float:
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + height_factor * (z2 - z1) ** 2)
         #  + slope_factor * slope_angle(x1, y1, z1, x2, y2, z2)
 
-    def heur_dist(self, x1, y1, x2, y2):
+    def heur_dist(self, x1, y1, x2, y2) -> float:
             return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     
     
@@ -88,10 +87,10 @@ class AStar:
         path_points = pd.concat([path_points, start.T], ignore_index=True, axis=0)
 
         # Define the heuristic function for A*
-        def heuristic1(node1, node2):
-                    x1, y1 = G.nodes[node1]['x'], G.nodes[node1]['y']
-                    x2, y2 = G.nodes[node2]['x'], G.nodes[node2]['y']
-                    return AStar.heur_dist(self, x1, y1, x2, y2)
+        def heuristic1(node1, node2) -> float:
+            x1, y1 = G.nodes[node1]['x'], G.nodes[node1]['y']
+            x2, y2 = G.nodes[node2]['x'], G.nodes[node2]['y']
+            return AStar.heur_dist(self, x1, y1, x2, y2)
 
         for k in range(subsets):
             #sub = pd.read_csv(os.path.join(subsets_path, f"{subset_name}{k}.csv"))
