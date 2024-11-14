@@ -12,11 +12,13 @@ subsets_dir = "subsets"
 random_points_name = "random_points"
 path_points_name = "path_points"
 path_name = "path"
+path_i_name = "path_i"
 subset_name = "subset"
 
 random_points_path = os.path.join(data_dir, f"{random_points_name}.csv")
 path_points_path = os.path.join(data_dir, f"{path_points_name}.csv")
 path_path = os.path.join(data_dir, f"{path_name}.csv")
+path_i_path = os.path.join(data_dir, f"{path_i_name}.csv")
 subsets_path = os.path.join(subsets_dir, f"{subset_name}")
 
 # Hyperparameters and variables
@@ -25,10 +27,10 @@ subsets_path = os.path.join(subsets_dir, f"{subset_name}")
 depth = 4
 
 # number of subsets/subgraphs (ideally subsets == resolution)
-subsets = 2000
+subsets = 500
 
 # higher resolution = less points. effective resolution = subsets/resolution
-resolution = 2000
+resolution = 5000
 
 # height importance factor
 height_factor = 1000
@@ -87,18 +89,20 @@ class AStar:
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + height_factor * (z2 - z1) ** 2)
         #  + slope_factor * slope_angle(x1, y1, z1, x2, y2, z2)
 
-    def heur_dist(self, x1, y1, z1, x2, y2, z2):
+    def heur_dist(self, x1, y1, x2, y2):
             return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+    
     
     def merge_subsets(self, start: pd.DataFrame, end: pd.DataFrame) -> pd.DataFrame:
         path_points = pd.DataFrame(columns=["x", "y", "z"])
         path_points = pd.concat([path_points, start.T], ignore_index=True, axis=0)
-        
+
         # Define the heuristic function for A*
         def heuristic1(node1, node2):
-                    x1, y1, z1 = G.nodes[node1]['x'], G.nodes[node1]['y'], G.nodes[node1]['z']
-                    x2, y2, z2 = G.nodes[node2]['x'], G.nodes[node2]['y'], G.nodes[node2]['z']
-                    return AStar.heur_dist(self, x1, y1, z1, x2, y2, z2)
+                    x1, y1 = G.nodes[node1]['x'], G.nodes[node1]['y']
+                    x2, y2 = G.nodes[node2]['x'], G.nodes[node2]['y']
+                    return AStar.heur_dist(self, x1, y1, x2, y2)
+
         for k in range(subsets):
             #sub = pd.read_csv(os.path.join(subsets_path, f"{subset_name}{k}.csv"))
             sub = giant[k]
@@ -137,14 +141,14 @@ class AStar:
             # add path to path_points
             path_points = pd.concat([path_points, sub.loc[path]], ignore_index=True, axis=0)
 
-            path_points.drop_duplicates(inplace=True, keep='first')
-            path_points.reset_index(drop=True, inplace=True)
-            # add end point to path_points
-            path_points = pd.concat([path_points, end.T], ignore_index=True, axis=0)
-            path_points.to_csv(path_points_path, index=False)
-            return path_points
+        path_points.drop_duplicates(inplace=True, keep='first')
+        path_points.reset_index(drop=True, inplace=True)
+        # add end point to path_points
+        path_points = pd.concat([path_points, end.T], ignore_index=True, axis=0)
+        path_points.to_csv(path_points_path, index=False)
+        return path_points
      
-    def create_path(self, path_points: pd.DataFrame) -> np.ndarray:
+    def create_path(self, path_points: pd.DataFrame) -> (np.ndarray, np.ndarray):
         # make new graph using path_points
         G = nx.Graph()
 
@@ -162,7 +166,7 @@ class AStar:
         coords = path_points[['x', 'y', 'z']].values
         tree = spatial.KDTree(coords)
         for i, row in path_points.iterrows():
-            distances, indices = tree.query([row['x'], row['y'], row['z']], k=depth+1)
+            _, indices = tree.query([row['x'], row['y'], row['z']], k=depth+1)
             for j in range(1, len(indices)):  # skip the first index because it is the point itself
                     node1 = i
                     node2 = indices[j]
@@ -181,13 +185,14 @@ class AStar:
                             w = heuristic2(start_node, i)
                             G.add_edge(start_node, i, weight=w)
                             break
+        
         # Find the shortest path using A*
         path_i = nx.astar_path(G, 0, path_points.shape[0] - 1, heuristic=heuristic2)
         path_i = pd.Series(path_i)
         path_i = np.ndarray.flatten(path_i.to_numpy())
         path = path_points.loc[path_i]
         path = path.to_numpy()
-        return path
+        return (path, path_i)
      
     """Finds the best path between point A and point B
     
@@ -206,7 +211,9 @@ class AStar:
         points.drop_duplicates(inplace=True)
         AStar.create_subsets(self, points, p_a, p_b)
         path_points = AStar.merge_subsets(self, p_a, p_b)
-        path = AStar.create_path(self, path_points)
+        path, path_i = AStar.create_path(self, path_points)
         temp_path = pd.DataFrame(path, columns=['x', 'y', 'z'])
         temp_path.to_csv(path_path, index=False)
+        path_i = pd.Series(path_i)
+        path_i.to_csv(path_i_path, index=False)
         return path

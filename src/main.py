@@ -7,6 +7,9 @@ import time
 import os
 
 start_time = time.time()
+print("Starting . . .")
+res = algorithms.subsets / algorithms.resolution
+print(f"Effective Resolution: {res}")
 
 random_points_path = os.path.join("data", "random_points.csv") 
 
@@ -33,10 +36,10 @@ def generate_bounds(points) -> (np.ndarray, np.ndarray):
     return start, end
 
 points = pd.read_csv(random_points_path)
-#point_a, point_b = generate_bounds(points)
+point_a, point_b = generate_bounds(points)
 AStar = algorithms.AStar(points.to_numpy())
-point_a = np.array([1425.0600000005215, 435.96000000089407, 5.399999999999864])
-point_b = np.array([218.19000000134113, 223.63000000081956, 34.24000000000001])
+# point_a = np.array([1425.0600000005215, 435.96000000089407, 5.399999999999864])
+# point_b = np.array([218.19000000134113, 223.63000000081956, 34.24000000000001])
 path = AStar.find_path(point_a, point_b)
 print(path)
 
