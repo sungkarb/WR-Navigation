@@ -1,2 +1,7 @@
 robotics/
 __pycache__/
+src/data/path_i.csv
+src/data/path_points.csv
+src/data/path.csv
+src/data/points.csv
+src/data/random_points.csv

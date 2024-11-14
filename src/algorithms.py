@@ -1,11 +1,11 @@
-import pandas as pd
+import json
 import math
-import numpy as np
+import os
 import random as random
 import networkx as nx
+import numpy as np
+import pandas as pd
 from scipy import spatial
-import os
-import json
 
 with open("settings.json", "r") as f:
     parameters = json.load(f)
