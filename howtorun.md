@@ -5,10 +5,10 @@
 ```bash
 git clone -b isaac https://github.com/sungkarb/WR-Navigation.git
 ```
-- cd into the repository
-```bash
-cd WR-Navigation/src/
-```
+- You may now close this terminal
+- In Visual Studio Code, open up the directory `WR-Navigation` using the either the menu, `Ctrl-O`, or `Cmd-O`
+- Follow the README to setup the virtual python environment
+- Keep the vscode terminal open after
 
 ### Windows users
 - Install any necessary python libraries listed here:
@@ -17,6 +17,7 @@ pip install networkx
 pip install numpy
 pip install pandas
 pip install scipy
+pip install matplotlib
 ```
 - Open up `settings.json` in the `src` folder and configure as needed (start and end points)
 - When you are ready to run the program (in the same terminal as before)
@@ -27,7 +28,6 @@ python main.py
 ```bash
 python visualize.py
 ```
-
 ### Mac users
 - Install any necessary python libraries listed here:
 ```bash
@@ -35,6 +35,7 @@ pip3 install networkx
 pip3 install numpy
 pip3 install pandas
 pip3 install scipy
+pip3 install matplotlib
 ```
 - Open up `settings.json` in the `src` folder and configure as needed (start and end points)
 - When you are ready to run the program (in the same terminal as before)
