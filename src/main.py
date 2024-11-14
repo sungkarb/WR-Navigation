@@ -1,17 +1,44 @@
-import random as random
-import pandas as pd
-import numpy as np
+import json
 import math
-import algorithms as algorithms
-import time
 import os
+import random
+import time
 
+import numpy as np
+import pandas as pd
+
+import algorithms
+
+print("Starting . . .\n")
 start_time = time.time()
-print("Starting . . .")
-res = algorithms.subsets / algorithms.resolution
-print(f"Effective Resolution: {res}")
+print("Reading settings.json . . .")
 
-random_points_path = os.path.join("data", "random_points.csv") 
+with open("settings.json", "r") as f:
+    parameters = json.load(f)
+    start_point = np.array(parameters['start_point'])
+    end_point = np.array(parameters['end_point'])
+    depth = parameters['depth']
+    subsets = parameters['subsets']
+    resolution = parameters['resolution']
+    height_factor = parameters['height_factor']
+    max_slope = parameters['max_slope']
+    slope_factor = parameters['slope_factor']
+
+    # file paths and names
+    data_dir = parameters['data_dir']
+    subsets_dir = parameters['subsets_dir']
+    random_points_name = parameters['random_points_name']
+    path_points_name = parameters['path_points_name']
+    path_name = parameters['path_name']
+    path_i_name = parameters['path_i_name']
+    subset_name = parameters['subset_name']
+
+res = subsets / resolution
+print(f"\tEffective Resolution: \t{res} ({subsets} / {resolution})")
+print(f"\tStart point: \t\t{start_point}")
+print(f"\tEnd point: \t\t{end_point}\n")
+
+random_points_path = algorithms.random_points_path
 
 def generate_bounds(points) -> (np.ndarray, np.ndarray):
     # generate a random point from the "points" dataframe
@@ -33,15 +60,22 @@ def generate_bounds(points) -> (np.ndarray, np.ndarray):
 
     print("Start point: ", start["x"], start["y"], start["z"])
     print("End point: ", end["x"], end["y"], end["z"])
+    print()
     return start, end
 
+print("Initializing . . .")
+init_start = time.time()
 points = pd.read_csv(random_points_path)
-point_a, point_b = generate_bounds(points)
 AStar = algorithms.AStar(points.to_numpy())
-# point_a = np.array([1425.0600000005215, 435.96000000089407, 5.399999999999864])
-# point_b = np.array([218.19000000134113, 223.63000000081956, 34.24000000000001])
-path = AStar.find_path(point_a, point_b)
-print(path)
+init_end = time.time()
+print(f"{round(init_end - init_start, 3)} seconds\n")
+
+print("Finding path . . .")
+astar_start = time.time()
+path = AStar.find_path(start_point, end_point)
+astar_end = time.time()
+print(f"{round(astar_end - astar_start, 3)} seconds\n")
 
 end_time = time.time()
-print(f"Runtime: {end_time - start_time} seconds")
+print("Done!")
+print(f"Total Runtime: {round(end_time - start_time, 3)} seconds\n")

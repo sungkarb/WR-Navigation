@@ -5,41 +5,31 @@ import random as random
 import networkx as nx
 from scipy import spatial
 import os
+import json
 
-# file paths and names
-data_dir = "data"
-subsets_dir = "subsets"
-random_points_name = "random_points"
-path_points_name = "path_points"
-path_name = "path"
-path_i_name = "path_i"
-subset_name = "subset"
+with open("settings.json", "r") as f:
+    parameters = json.load(f)
+    depth = parameters['depth']
+    subsets = parameters['subsets']
+    resolution = parameters['resolution']
+    height_factor = parameters['height_factor']
+    max_slope = parameters['max_slope']
+    slope_factor = parameters['slope_factor']
+
+    # file paths and names
+    data_dir = parameters['data_dir']
+    subsets_dir = parameters['subsets_dir']
+    random_points_name = parameters['random_points_name']
+    path_points_name = parameters['path_points_name']
+    path_name = parameters['path_name']
+    path_i_name = parameters['path_i_name']
+    subset_name = parameters['subset_name']
 
 random_points_path = os.path.join(data_dir, f"{random_points_name}.csv")
 path_points_path = os.path.join(data_dir, f"{path_points_name}.csv")
 path_path = os.path.join(data_dir, f"{path_name}.csv")
 path_i_path = os.path.join(data_dir, f"{path_i_name}.csv")
 subsets_path = os.path.join(subsets_dir, f"{subset_name}")
-
-# Hyperparameters and variables
-
-# number of edges per node in the graph
-depth = 4
-
-# number of subsets/subgraphs (ideally subsets == resolution)
-subsets = 500
-
-# higher resolution = less points. effective resolution = subsets/resolution
-resolution = 5000
-
-# height importance factor
-height_factor = 1000
-
-# max tolerated slope angle (degrees) UNUSED
-max_slope = 40
-
-# slope importance factor UNUSED
-slope_factor = 0.005
 
 # giant array
 giant = []
