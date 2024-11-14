@@ -38,6 +38,10 @@ pip install scipy
 pip install matplotlib
 pip install laspy lazrs
 ```
+- Run `setup.py` to initialize necessary data
+```bash
+python setup.py
+```
 - Open up `settings.json` in the `src` folder and configure as needed (start and end points)
 - When you are ready to run the program (in the same terminal as before)
 ```bash
@@ -56,6 +60,10 @@ pip3 install pandas
 pip3 install scipy
 pip3 install matplotlib
 pip3 install laspy lazrs
+```
+- Run `setup.py` to initialize necessary data
+```bash
+python3 setup.py
 ```
 - Open up `settings.json` in the `src` folder and configure as needed (start and end points)
 - When you are ready to run the program (in the same terminal as before)
