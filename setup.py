@@ -9,7 +9,6 @@ import laspy, lazrs
 import numpy as np
 
 print("\nTHIS WILL TAKE ABOUT 6-7 MINUTES TO RUN!!")
-
 print("Setting up . . .")
 
 p1 = os.path.join("src", "settings.json")
