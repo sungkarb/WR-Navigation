@@ -18,6 +18,9 @@ with open(p1, "r") as f:
     p_name = parameters['points_name']
     data_dir = parameters['data_dir']
     random_points_name = parameters['random_points_name']
+    x_offset = parameters['x_offset']
+    y_offset = parameters['y_offset']
+    z_offset = parameters['z_offset']
 
 p2 = os.path.join("src", data_dir)
 
@@ -28,9 +31,6 @@ except FileExistsError:
     print("Directory already exists")
 
 # generate points.csv
-x_offset = -12333899.21
-y_offset = 4636564.89
-z_offset = 1365.4
 file_path = os.path.join("map_data", "point_cloud.laz")
 las = laspy.read(file_path)
 points = pd.DataFrame(np.vstack((las.x, las.y, las.z)).transpose())
@@ -46,7 +46,7 @@ p = os.path.join(p2, f"{p_name}.csv")
 
 print("Sorting points . . .")  
 sorted_points = points.sort_values(by=['x', 'y', 'z'])
-sorted_points = sorted_points.reset_index(drop=True)
+sorted_points.reset_index(drop=True)
 
 print("Writing points . . .")
 sorted_points.to_csv(p, index=False)
