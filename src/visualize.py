@@ -17,7 +17,7 @@ path_points = pd.read_csv(algorithms.path_points_path)
 path = pd.read_csv(algorithms.path_path)
 
 # plot settings
-boldness = 1
+boldness = 0.01
 
 # plot the path
 fig = plt.figure()
