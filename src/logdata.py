@@ -22,14 +22,14 @@ def generate_bounds(points) -> (np.ndarray, np.ndarray):
     return start, end
 
 def main(subs, rsn):
-    
-    with open("settings.json", "r") as f:
-        parameters = json.load(f)
-        start_point = np.array(parameters['start_point'])
-        end_point = np.array(parameters['end_point'])
-    
     subsets = subs
     resolution = rsn
+    with open("settings.json", "r") as f:
+        parameters = json.load(f)
+        parameters['subsets'] = subsets
+        parameters['resolution'] = resolution
+    with open("settings.json", "w") as f:
+        json.dump(parameters, f)
 
     data = np.ndarray([], dtype=float)
     data = np.append(data, subsets)
@@ -52,3 +52,7 @@ def main(subs, rsn):
     with open(os.path.join("logs", "log.csv"), "a", newline='') as f:
         np.savetxt(f, [data], delimiter=",", fmt='%.6f')
     print(data)
+
+for rsn in range(6_000, 4_500-1, -500):
+    for sub in range(500, rsn+1, 250):
+        main(sub, rsn)
