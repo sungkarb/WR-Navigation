@@ -63,15 +63,15 @@ def generate_bounds(points) -> (np.ndarray, np.ndarray):
 print("Initializing . . .")
 init_start = time.time()
 points = pd.read_csv(random_points_path)
-AStar = algorithms.AStar(points.to_numpy())
+AStar = algorithms.AStar()
 init_end = time.time()
-print(f"{round(init_end - init_start, 3)} seconds\n")
+print(f"Initialization took {round(init_end - init_start, 3)} seconds\n")
 
 print("Finding path . . .")
 astar_start = time.time()
 path = AStar.find_path(start_point, end_point)
 astar_end = time.time()
-print(f"{round(astar_end - astar_start, 3)} seconds\n")
+print(f"Path finding took {round(astar_end - astar_start, 3)} seconds\n")
 
 end_time = time.time()
 print("Done!")

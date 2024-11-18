@@ -61,7 +61,7 @@ pip3 install scipy
 pip3 install matplotlib
 pip3 install laspy lazrs
 ```
-- Run `setup.py` to initialize necessary data
+- Run `setup.py` to initialize necessary data. This only has to be done ONCE!!
 ```bash
 python3 setup.py
 ```

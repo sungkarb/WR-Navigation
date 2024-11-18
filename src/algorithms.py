@@ -2,6 +2,7 @@ import json
 import math
 import os
 import random as random
+import time as time
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -43,11 +44,12 @@ class AStar:
     Args:
         data: numpy array with dimensions (n x 3)
     """
-    def __init__(self, data: np.ndarray) -> None:
-        # process data
-        points = pd.DataFrame(data, columns=['x', 'y', 'z'])
-        points.drop_duplicates(inplace=True)
-        points.sample(frac=1).reset_index(drop=True).to_csv(random_points_path, index=False)
+    def __init__(self) -> None:
+        # process data. assumes that the given data is unique and randomized
+        # points = pd.DataFrame(data, columns=['x', 'y', 'z'])
+        # points.drop_duplicates(inplace=True)
+        # points.sample(frac=1).reset_index(drop=True).to_csv(random_points_path, index=False)
+        return
 
     # helper methods
     def slope_angle(self, x1, y1, z1, x2, y2, z2) -> float:
@@ -60,10 +62,14 @@ class AStar:
         return abs(math.degrees(math.acos(abs(z2 - z1) / v_norm)))
     
     def create_subsets(self, points: pd.DataFrame, start: pd.DataFrame, end: pd.DataFrame) -> None:
+        start_time = time.time()
+        time_array = np.array([])
+
         # Number of points per subset based on resolution
         points_per_subset = len(points) // resolution
 
         for i in range(subsets):
+            s_t = time.time()
             # Select the subset of points with points_per_subset points
             sub = points.iloc[i * points_per_subset:(i + 1) * points_per_subset].copy()
             
@@ -72,6 +78,13 @@ class AStar:
 
             # add it to new giant variable that is the array of all subsets
             giant.append(sub)
+            e_t = time.time()
+            time_array = np.append(time_array, e_t - s_t)
+        
+        avg_time = np.mean(time_array)
+        end_time = time.time()
+        print(f"\tEach subset took an average of {round(avg_time, 3)} seconds")
+        print(f"\tCreating subsets took {round(end_time - start_time, 3)} seconds\n")
 
     # heuristic function: greater return value means greater cost for the path (best path has low cost)
     def heur(self, x1, y1, z1, x2, y2, z2) -> float:
@@ -83,6 +96,9 @@ class AStar:
     
     
     def merge_subsets(self, start: pd.DataFrame, end: pd.DataFrame) -> pd.DataFrame:
+        start_time = time.time()
+        time_array = np.array([])
+
         path_points = pd.DataFrame(columns=["x", "y", "z"])
         path_points = pd.concat([path_points, start.T], ignore_index=True, axis=0)
 
@@ -93,6 +109,7 @@ class AStar:
             return AStar.heur_dist(self, x1, y1, x2, y2)
 
         for k in range(subsets):
+            s_t = time.time()
             #sub = pd.read_csv(os.path.join(subsets_path, f"{subset_name}{k}.csv"))
             sub = giant[k]
             G = nx.Graph()
@@ -122,22 +139,31 @@ class AStar:
                                     w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
                                     G.add_edge(start_node, i, weight=w)
                                     break
-
+            
             # Find the shortest path using A*
             path = nx.astar_path(G, sub.shape[0] - 2, sub.shape[0] - 1, heuristic=heuristic1)
             path = pd.Series(path)
             
             # add path to path_points
             path_points = pd.concat([path_points, sub.loc[path]], ignore_index=True, axis=0)
+            e_t = time.time()
+            time_array = np.append(time_array, e_t - s_t)
 
         path_points.drop_duplicates(inplace=True, keep='first')
         path_points.reset_index(drop=True, inplace=True)
         # add end point to path_points
         path_points = pd.concat([path_points, end.T], ignore_index=True, axis=0)
         path_points.to_csv(path_points_path, index=False)
+
+        avg_time = np.mean(time_array)
+        end_time = time.time()
+        print(f"\tPathing each subset took an average of {round(avg_time, 3)} seconds")
+        print(f"\tMerging subsets took {round(end_time - start_time, 3)} seconds\n")
         return path_points
      
     def create_path(self, path_points: pd.DataFrame) -> (np.ndarray, np.ndarray):
+        start_time = time.time()
+
         # make new graph using path_points
         G = nx.Graph()
 
@@ -181,6 +207,10 @@ class AStar:
         path_i = np.ndarray.flatten(path_i.to_numpy())
         path = path_points.loc[path_i]
         path = path.to_numpy()
+
+        end_time = time.time()
+        print(f"\tCreating path took {round(end_time - start_time, 3)} seconds")
+
         return (path, path_i)
      
     """Finds the best path between point A and point B
@@ -201,8 +231,15 @@ class AStar:
         AStar.create_subsets(self, points, p_a, p_b)
         path_points = AStar.merge_subsets(self, p_a, p_b)
         path, path_i = AStar.create_path(self, path_points)
+
+        start_time = time.time()
+
         temp_path = pd.DataFrame(path, columns=['x', 'y', 'z'])
         temp_path.to_csv(path_path, index=False)
         path_i = pd.Series(path_i)
         path_i.to_csv(path_i_path, index=False)
+
+        end_time = time.time()
+        print(f"\tSaving path took {round(end_time - start_time, 3)} seconds\n")
+
         return path
