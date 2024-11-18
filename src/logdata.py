@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import algorithms
 
-
 '''
     higher subsets = takes longer to run
     lower resolution = takes longer to run

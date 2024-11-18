@@ -1,10 +1,11 @@
 # How to use the data logger
 ## Setup for `logdata.py`
 - Open `logdata.py`
-- Scroll to the bottom of the file
-- Edit the bounds for the for-loop as needed
+- Edit the data logging parameters at the top
 - Ensure that you have enough time to run the files
 	- Assume each iteration takes 5 minutes
+- Data will be uploaded to `src/logs/log.csv/`
+- If you want to run the data logger again, make sure to save the previous run (rename the file) or else all of the new data will be added to the same file
 # algorithms.py docs
 ## Parameters (settings.json)
 - `depth`: int
