@@ -49,7 +49,12 @@ class AStar:
         # points = pd.DataFrame(data, columns=['x', 'y', 'z'])
         # points.drop_duplicates(inplace=True)
         # points.sample(frac=1).reset_index(drop=True).to_csv(random_points_path, index=False)
-        return
+        global subsets
+        global resolution
+        with open("settings.json", "r") as f:
+            parameters = json.load(f)
+            subsets = parameters['subsets']
+            resolution = parameters['resolution']
 
     # helper methods
     def slope_angle(self, x1, y1, z1, x2, y2, z2) -> float:

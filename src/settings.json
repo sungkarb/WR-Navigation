@@ -1,12 +1,20 @@
 {
-    "start_point": [1200, 200, 8],
-    "end_point": [800, 700, 9],
+    "start_point": [
+        1200,
+        200,
+        8
+    ],
+    "end_point": [
+        800,
+        700,
+        9
+    ],
     "x_offset": -12333899.21,
     "y_offset": 4636564.89,
     "z_offset": 1365.4,
     "depth": 4,
-    "subsets": 250,
-    "resolution": 6500,
+    "subsets": 1500,
+    "resolution": 6000,
     "height_factor": 1000,
     "max_slope": 40,
     "slope_factor": 0.005,

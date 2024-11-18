@@ -29,7 +29,7 @@ def main(subs, rsn):
         parameters['subsets'] = subsets
         parameters['resolution'] = resolution
     with open("settings.json", "w") as f:
-        json.dump(parameters, f)
+        json.dump(parameters, f, indent=4)
 
     data = np.ndarray([], dtype=float)
     data = np.append(data, subsets)
@@ -54,5 +54,5 @@ def main(subs, rsn):
     print(data)
 
 for rsn in range(6_000, 4_500-1, -500):
-    for sub in range(500, rsn+1, 250):
+    for sub in range(250, rsn+1, 250):
         main(sub, rsn)
