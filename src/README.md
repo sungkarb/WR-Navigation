@@ -1,3 +1,10 @@
+# How to use the data logger
+## Setup for `logdata.py`
+- Open `logdata.py`
+- Scroll to the bottom of the file
+- Edit the bounds for the for-loop as needed
+- Ensure that you have enough time to run the files
+	- Assume each iteration takes 5 minutes
 # algorithms.py docs
 ## Parameters (settings.json)
 - `depth`: int
@@ -26,9 +33,8 @@
 	- Stores the indices of points that `path` uses from the array `path_points`
 
 ## Methods
-- `__init__(self, data: np.ndarray)`: returns None
-	- `data`: the array of points that will be operated on
-	- Takes in `data`, removes duplicate entries, randomizes the order of the coordinates. (This is needed for the generation of subsets)
+- `__init__(self)`: returns None
+	- Updates subsets and resolution appropiately
 - `slope_angle(self, x1, y1, z1, x2, y2, z2)`: returns float | UNUSED
 	- `args`: the coordinates of the two vectors to be operated on
 	- Finds the absolute value of the angle in degrees between the two vectors
