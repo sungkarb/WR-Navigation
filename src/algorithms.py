@@ -83,8 +83,8 @@ class AStar:
         
         avg_time = np.mean(time_array)
         end_time = time.time()
-        print(f"\tEach subset took an average of {round(avg_time, 3)} seconds")
-        print(f"\tCreating subsets took {round(end_time - start_time, 3)} seconds\n")
+        print(f"\tEach subset took an average of {round(avg_time, 5)} seconds")
+        print(f"\tCreating subsets took {round(end_time - start_time, 5)} seconds\n")
 
     # heuristic function: greater return value means greater cost for the path (best path has low cost)
     def heur(self, x1, y1, z1, x2, y2, z2) -> float:
@@ -157,8 +157,8 @@ class AStar:
 
         avg_time = np.mean(time_array)
         end_time = time.time()
-        print(f"\tPathing each subset took an average of {round(avg_time, 3)} seconds")
-        print(f"\tMerging subsets took {round(end_time - start_time, 3)} seconds\n")
+        print(f"\tPathing each subset took an average of {round(avg_time, 5)} seconds")
+        print(f"\tMerging subsets took {round(end_time - start_time, 5)} seconds\n")
         return path_points
      
     def create_path(self, path_points: pd.DataFrame) -> (np.ndarray, np.ndarray):
@@ -209,7 +209,7 @@ class AStar:
         path = path.to_numpy()
 
         end_time = time.time()
-        print(f"\tCreating path took {round(end_time - start_time, 3)} seconds")
+        print(f"\tCreating path took {round(end_time - start_time, 5)} seconds")
 
         return (path, path_i)
      
@@ -240,6 +240,6 @@ class AStar:
         path_i.to_csv(path_i_path, index=False)
 
         end_time = time.time()
-        print(f"\tSaving path took {round(end_time - start_time, 3)} seconds\n")
+        print(f"\tSaving path took {round(end_time - start_time, 5)} seconds\n")
 
         return path
