@@ -21,13 +21,13 @@ path_points = pd.read_csv(os.path.join(data_dir, f"{path_points_name}.csv"))
 path = pd.read_csv(os.path.join(data_dir, f"{path_name}.csv"))
 
 # plot settings
-boldness = 0.05
+boldness = 0.1
 
 # plot the path
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
 ax.scatter(path_points["x"], path_points["y"], path_points["z"], c='r', s=boldness*res, marker='.')
-ax.plot(path["x"], path["y"], path["z"], c='b')
+ax.plot(path["x"], path["y"], path["z"], c='b', linewidth=1)
 ax.set_xlabel('X axis (m)')
 ax.set_ylabel('Y axis (m)')
 ax.set_zlabel('Z axis (m)')

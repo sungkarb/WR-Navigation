@@ -38,11 +38,11 @@ print(f"\tEnd point: \t\t{end_point}\n")
 
 random_points_path = os.path.join(data_dir, f"{random_points_name}.csv")
 
-def generate_bounds(points) -> (np.ndarray, np.ndarray):
+def generate_bounds(points: pd.DataFrame) -> (np.ndarray, np.ndarray):
     # generate a random point from the "points" dataframe
     minDistance = 800
-    start_index = random.randint(0, points.shape[0])
-    end_index = random.randint(0, points.shape[0])
+    start_index = random.randint(0, points.shape[0]-1)
+    end_index = random.randint(0, points.shape[0]-1)
     start = points.loc[start_index]
     end = points.loc[end_index]
 
@@ -51,8 +51,8 @@ def generate_bounds(points) -> (np.ndarray, np.ndarray):
         return math.sqrt((p1["x"] - p2["x"])**2 + (p1["y"] - p2["y"])**2 + (p1["z"] - p2["z"])**2)
 
     while (distance(start, end) < minDistance):
-        start_index = random.randint(0, points.shape[0])
-        end_index = random.randint(0, points.shape[0])
+        start_index = random.randint(0, points.shape[0]-1)
+        end_index = random.randint(0, points.shape[0]-1)
         start = points.loc[start_index]
         end = points.loc[end_index]
 
@@ -64,6 +64,7 @@ def generate_bounds(points) -> (np.ndarray, np.ndarray):
 print("Initializing . . .")
 init_start = time.time()
 points = pd.read_csv(random_points_path)
+# start_point, end_point = generate_bounds(points)
 AStar = algorithms.AStar()
 init_end = time.time()
 print(f"Initialization took {round(init_end - init_start, 5)} seconds\n")
