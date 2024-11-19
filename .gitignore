@@ -5,3 +5,4 @@ src/data/path_points.csv
 src/data/path.csv
 src/data/points.csv
 src/data/random_points.csv
+src/logs/log.csv
