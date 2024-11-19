@@ -1,250 +1,204 @@
+# algorithms.py
 import json
 import math
 import os
-import random as random
-import time as time
+from dataclasses import dataclass
+from typing import Tuple, List, Dict
 import networkx as nx
 import numpy as np
 import pandas as pd
 from scipy import spatial
+from functools import lru_cache
 
-with open("settings.json", "r") as f:
-    parameters = json.load(f)
-    depth = parameters['depth']
-    subsets = parameters['subsets']
-    resolution = parameters['resolution']
-    height_factor = parameters['height_factor']
-    max_slope = parameters['max_slope']
-    slope_factor = parameters['slope_factor']
+@dataclass
+class PathfinderConfig:
+    """Configuration class to store pathfinding parameters"""
+    depth: int
+    subsets: int
+    resolution: int
+    height_factor: float
+    max_slope: float
+    slope_factor: float
+    data_dir: str
+    subsets_dir: str
+    random_points_name: str
+    path_points_name: str
+    path_name: str
+    path_i_name: str
+    subset_name: str
+    points_name: str
+    start_point: List[float]
+    end_point: List[float]
+    x_offset: float 
+    y_offset: float
+    z_offset: float
 
-    # file paths and names
-    data_dir = parameters['data_dir']
-    subsets_dir = parameters['subsets_dir']
-    random_points_name = parameters['random_points_name']
-    path_points_name = parameters['path_points_name']
-    path_name = parameters['path_name']
-    path_i_name = parameters['path_i_name']
-    subset_name = parameters['subset_name']
+    @classmethod
+    def from_json(cls, filepath: str) -> 'PathfinderConfig':
+        """Create config from JSON file"""
+        with open(filepath, "r") as f:
+            return cls(**json.load(f))
 
-random_points_path = os.path.join(data_dir, f"{random_points_name}.csv")
-path_points_path = os.path.join(data_dir, f"{path_points_name}.csv")
-path_path = os.path.join(data_dir, f"{path_name}.csv")
-path_i_path = os.path.join(data_dir, f"{path_i_name}.csv")
-subsets_path = os.path.join(subsets_dir, f"{subset_name}")
-
-# giant array
-giant = []
-
-"""Class to find the most optimal path using A* algorithm for robotics. Target change in elevation
-    and distance to target
-"""
 class AStar:
-    """"Sets up the graph for the efficient path finding
+    """Optimized A* pathfinding implementation for robotics"""
     
-    Args:
-        data: numpy array with dimensions (n x 3)
-    """
-    def __init__(self) -> None:
-        # process data. assumes that the given data is unique and randomized
-        # points = pd.DataFrame(data, columns=['x', 'y', 'z'])
-        # points.drop_duplicates(inplace=True)
-        # points.sample(frac=1).reset_index(drop=True).to_csv(random_points_path, index=False)
-        global subsets
-        global resolution
-        with open("settings.json", "r") as f:
-            parameters = json.load(f)
-            subsets = parameters['subsets']
-            resolution = parameters['resolution']
+    def __init__(self, config_path: str = "settings.json"):
+        """Initialize AStar with configuration"""
+        self.config = PathfinderConfig.from_json(config_path)
+        self.subsets_cache: List[pd.DataFrame] = []
+        self._setup_file_paths()
+        
+    def _setup_file_paths(self) -> None:
+        """Set up file paths based on configuration"""
+        self.random_points_path = os.path.join(self.config.data_dir, f"{self.config.random_points_name}.csv")
+        self.path_points_path = os.path.join(self.config.data_dir, f"{self.config.path_points_name}.csv")
+        self.path_path = os.path.join(self.config.data_dir, f"{self.config.path_name}.csv")
+        self.path_i_path = os.path.join(self.config.data_dir, f"{self.config.path_i_name}.csv")
 
-    # helper methods
-    def slope_angle(self, x1, y1, z1, x2, y2, z2) -> float:
-        # v dot w = |v||w|cos(theta)
-        # theta = arccos(v dot w / |v||w|)
+    @staticmethod
+    @lru_cache(maxsize=1024)
+    def _calculate_slope(x1: float, y1: float, z1: float, x2: float, y2: float, z2: float) -> float:
+        """Calculate slope angle between two points with caching"""
         v = np.array([(x2 - x1), (y2 - y1), (z2 - z1)])
         v_norm = np.linalg.norm(v)
-        if v_norm == 0:
-            return 0
-        return abs(math.degrees(math.acos(abs(z2 - z1) / v_norm)))
-    
-    def create_subsets(self, points: pd.DataFrame, start: pd.DataFrame, end: pd.DataFrame) -> None:
-        start_time = time.time()
-        time_array = np.array([])
+        return 0 if v_norm == 0 else abs(math.degrees(math.acos(abs(z2 - z1) / v_norm)))
 
-        # Number of points per subset based on resolution
-        points_per_subset = len(points) // resolution
+    @staticmethod
+    @lru_cache(maxsize=1024)
+    def _heuristic_distance(x1: float, y1: float, x2: float, y2: float) -> float:
+        """Calculate 2D distance heuristic with caching"""
+        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
 
-        for i in range(subsets):
-            s_t = time.time()
-            # Select the subset of points with points_per_subset points
-            sub = points.iloc[i * points_per_subset:(i + 1) * points_per_subset].copy()
-            
-            # Add the start and end points to the subset
-            sub = pd.concat([sub, start.T, end.T], ignore_index=True)
-
-            # add it to new giant variable that is the array of all subsets
-            giant.append(sub)
-            e_t = time.time()
-            time_array = np.append(time_array, e_t - s_t)
-        
-        avg_time = np.mean(time_array)
-        end_time = time.time()
-        print(f"\tEach subset took an average of {round(avg_time, 5)} seconds")
-        print(f"\tCreating subsets took {round(end_time - start_time, 5)} seconds\n")
-
-    # heuristic function: greater return value means greater cost for the path (best path has low cost)
-    def heur(self, x1, y1, z1, x2, y2, z2) -> float:
+    @staticmethod
+    @lru_cache(maxsize=1024)
+    def _heuristic_3d(x1: float, y1: float, z1: float, x2: float, y2: float, z2: float, height_factor: float) -> float:
+        """Calculate 3D distance heuristic with caching"""
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + height_factor * (z2 - z1) ** 2)
-        #  + slope_factor * slope_angle(x1, y1, z1, x2, y2, z2)
 
-    def heur_dist(self, x1, y1, x2, y2) -> float:
-            return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-    
-    
-    def merge_subsets(self, start: pd.DataFrame, end: pd.DataFrame) -> pd.DataFrame:
-        start_time = time.time()
-        time_array = np.array([])
-
-        path_points = pd.DataFrame(columns=["x", "y", "z"])
-        path_points = pd.concat([path_points, start.T], ignore_index=True, axis=0)
-
-        # Define the heuristic function for A*
-        def heuristic1(node1, node2) -> float:
-            x1, y1 = G.nodes[node1]['x'], G.nodes[node1]['y']
-            x2, y2 = G.nodes[node2]['x'], G.nodes[node2]['y']
-            return AStar.heur_dist(self, x1, y1, x2, y2)
-
-        for k in range(subsets):
-            s_t = time.time()
-            #sub = pd.read_csv(os.path.join(subsets_path, f"{subset_name}{k}.csv"))
-            sub = giant[k]
-            G = nx.Graph()
-
-            # Add nodes from subset
-            for i, row in sub.iterrows():
-                    G.add_node(i, x = row['x'], y = row['y'], z = row['z'])
-
-            # Add edges between the closest nodes (ignoring height)
-            coords = sub[['x', 'y']].values
-            tree = spatial.KDTree(coords)
-            for i, row in sub.iterrows():
-                    distances, indices = tree.query([row['x'], row['y']], k=depth+1)
-                    for j in range(1, len(indices)):  # skip the first index because it is the point itself
-                        G.add_edge(i, indices[j], weight=distances[j])
-
-            # check if the graph is connected
-            if not nx.is_connected(G):
-                    # start at a node. add an edge to the closest node that is not connected
-                    # repeat until the graph is connected
-                    start_node = sub.shape[0] - 2
-                    end_node = sub.shape[0] - 1
-                    while not nx.has_path(G, start_node, end_node):
-                        # find the closest node that is not connected
-                        for i, row in sub.iterrows():
-                            if not nx.has_path(G, start_node, i):
-                                    w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
-                                    G.add_edge(start_node, i, weight=w)
-                                    break
-            
-            # Find the shortest path using A*
-            path = nx.astar_path(G, sub.shape[0] - 2, sub.shape[0] - 1, heuristic=heuristic1)
-            path = pd.Series(path)
-            
-            # add path to path_points
-            path_points = pd.concat([path_points, sub.loc[path]], ignore_index=True, axis=0)
-            e_t = time.time()
-            time_array = np.append(time_array, e_t - s_t)
-
-        path_points.drop_duplicates(inplace=True, keep='first')
-        path_points.reset_index(drop=True, inplace=True)
-        # add end point to path_points
-        path_points = pd.concat([path_points, end.T], ignore_index=True, axis=0)
-        path_points.to_csv(path_points_path, index=False)
-
-        avg_time = np.mean(time_array)
-        end_time = time.time()
-        print(f"\tPathing each subset took an average of {round(avg_time, 5)} seconds")
-        print(f"\tMerging subsets took {round(end_time - start_time, 5)} seconds\n")
-        return path_points
-     
-    def create_path(self, path_points: pd.DataFrame) -> (np.ndarray, np.ndarray):
-        start_time = time.time()
-
-        # make new graph using path_points
+    def _create_graph_from_points(self, points: pd.DataFrame, use_3d: bool = False) -> nx.Graph:
+        """Create graph from points with optimized edge creation"""
         G = nx.Graph()
-
-        # Define the heuristic function for A*
-        def heuristic2(node1, node2):
-            x1, y1, z1 = G.nodes[node1]['x'], G.nodes[node1]['y'], G.nodes[node1]['z']
-            x2, y2, z2 = G.nodes[node2]['x'], G.nodes[node2]['y'], G.nodes[node2]['z']
-            return AStar.heur(self, x1, y1, z1, x2, y2, z2)
-
-        # Add nodes from path_points
-        for i, row in path_points.iterrows():
-            G.add_node(i, x = row['x'], y = row['y'], z = row['z'])
-
-        # Add edges between the closest nodes
-        coords = path_points[['x', 'y', 'z']].values
-        tree = spatial.KDTree(coords)
-        for i, row in path_points.iterrows():
-            _, indices = tree.query([row['x'], row['y'], row['z']], k=depth+1)
-            for j in range(1, len(indices)):  # skip the first index because it is the point itself
-                    node1 = i
-                    node2 = indices[j]
-                    G.add_edge(node1, node2, weight=heuristic2(node1, node2))
-
-        # check if the graph is connected
-        if not nx.is_connected(G):
-            # start at a node. add an edge to the closest node that is not connected
-            # repeat until the graph is connected
-            start_node = path_points.shape[0] - 2
-            end_node = path_points.shape[0] - 1
-            while not nx.has_path(G, start_node, end_node):
-                    # find the closest node that is not connected
-                    for i, row in path_points.iterrows():
-                        if not nx.has_path(G, start_node, i):
-                            w = heuristic2(start_node, i)
-                            G.add_edge(start_node, i, weight=w)
-                            break
         
-        # Find the shortest path using A*
-        path_i = nx.astar_path(G, 0, path_points.shape[0] - 1, heuristic=heuristic2)
-        path_i = pd.Series(path_i)
-        path_i = np.ndarray.flatten(path_i.to_numpy())
-        path = path_points.loc[path_i]
-        path = path.to_numpy()
+        # Vectorized node addition
+        node_data = {i: {'x': row['x'], 'y': row['y'], 'z': row['z']} 
+                    for i, row in points.iterrows()}
+        G.add_nodes_from(node_data.items())
 
-        end_time = time.time()
-        print(f"\tCreating path took {round(end_time - start_time, 5)} seconds")
+        # Optimized edge creation using KD-Tree
+        coords = points[['x', 'y', 'z'] if use_3d else ['x', 'y']].values
+        tree = spatial.KDTree(coords)
+        
+        # Vectorized query for all points
+        distances, indices = tree.query(coords, k=self.config.depth + 1)
+        
+        # Batch edge addition
+        edges = [(i, idx, {'weight': dist}) 
+                for i in range(len(points))
+                for dist, idx in zip(distances[i, 1:], indices[i, 1:])]
+        G.add_edges_from(edges)
 
-        return (path, path_i)
-     
-    """Finds the best path between point A and point B
-    
-    Args:
-        pointA: point A with coordinates (x_a, y_a, z_a)
-        pointB: point B with coordinates (x_b, y_b, z_b)
-    
-    Returns:
-        Path of points through the graph representes as an array with shape (m, 3)
-    """
+        return G
+
+    def create_subsets(self, points: pd.DataFrame, start: pd.DataFrame, end: pd.DataFrame) -> None:
+        """Create optimized subsets of points"""
+        points_per_subset = len(points) // self.config.resolution
+        
+        # Vectorized subset creation
+        self.subsets_cache = [
+            pd.concat([
+                points.iloc[i * points_per_subset:(i + 1) * points_per_subset],
+                start.T,
+                end.T
+            ], ignore_index=True)
+            for i in range(self.config.subsets)
+        ]
+
+    def merge_subsets(self, start: pd.DataFrame, end: pd.DataFrame) -> pd.DataFrame:
+        """Merge subsets with optimized pathfinding"""
+        path_points = pd.concat([pd.DataFrame(columns=["x", "y", "z"]), start.T], 
+                              ignore_index=True)
+
+        for subset in self.subsets_cache:
+            G = self._create_graph_from_points(subset)
+            
+            if not nx.is_connected(G):
+                self._ensure_graph_connectivity(G, subset)
+            
+            # A* pathfinding with cached heuristic
+            path = nx.astar_path(
+                G, 
+                subset.shape[0] - 2,
+                subset.shape[0] - 1,
+                heuristic=lambda n1, n2: self._heuristic_distance(
+                    G.nodes[n1]['x'], G.nodes[n1]['y'],
+                    G.nodes[n2]['x'], G.nodes[n2]['y']
+                )
+            )
+            
+            path_points = pd.concat([path_points, subset.loc[path]], 
+                                  ignore_index=True)
+
+        path_points = path_points.drop_duplicates(keep='first').reset_index(drop=True)
+        return pd.concat([path_points, end.T], ignore_index=True)
+
     def find_path(self, point_a: np.ndarray, point_b: np.ndarray) -> np.ndarray:
-        points = pd.read_csv(random_points_path)
-        p_a = pd.DataFrame(point_a, index=['x', 'y', 'z'])
-        p_b = pd.DataFrame(point_b, index=['x', 'y', 'z'])
-        points = pd.concat([points, p_a.T, p_b.T], ignore_index=True, axis=0)
-        points.drop_duplicates(inplace=True)
-        AStar.create_subsets(self, points, p_a, p_b)
-        path_points = AStar.merge_subsets(self, p_a, p_b)
-        path, path_i = AStar.create_path(self, path_points)
+        """Main pathfinding method with optimized workflow"""
+        try:
+            points = pd.read_csv(self.random_points_path)
+            p_a = pd.DataFrame(point_a, index=['x', 'y', 'z'])
+            p_b = pd.DataFrame(point_b, index=['x', 'y', 'z'])
+            
+            # Optimized point processing
+            points = pd.concat([points, p_a.T, p_b.T], ignore_index=True).drop_duplicates()
+            
+            self.create_subsets(points, p_a, p_b)
+            path_points = self.merge_subsets(p_a, p_b)
+            path, path_i = self._create_final_path(path_points)
+            
+            # Save results
+            pd.DataFrame(path, columns=['x', 'y', 'z']).to_csv(self.path_path, index=False)
+            pd.Series(path_i).to_csv(self.path_i_path, index=False)
+            
+            return path
+            
+        except Exception as e:
+            print(f"Error in pathfinding: {str(e)}")
+            raise
 
-        start_time = time.time()
+    def _create_final_path(self, path_points: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
+        """Create final optimized path"""
+        G = self._create_graph_from_points(path_points, use_3d=True)
+        
+        if not nx.is_connected(G):
+            self._ensure_graph_connectivity(G, path_points)
+        
+        path_i = nx.astar_path(
+            G, 0, path_points.shape[0] - 1,
+            heuristic=lambda n1, n2: self._heuristic_3d(
+                G.nodes[n1]['x'], G.nodes[n1]['y'], G.nodes[n1]['z'],
+                G.nodes[n2]['x'], G.nodes[n2]['y'], G.nodes[n2]['z'],
+                self.config.height_factor
+            )
+        )
+        
+        return path_points.loc[path_i].to_numpy(), np.array(path_i)
 
-        temp_path = pd.DataFrame(path, columns=['x', 'y', 'z'])
-        temp_path.to_csv(path_path, index=False)
-        path_i = pd.Series(path_i)
-        path_i.to_csv(path_i_path, index=False)
-
-        end_time = time.time()
-        print(f"\tSaving path took {round(end_time - start_time, 5)} seconds\n")
-
-        return path
+    @staticmethod
+    def _ensure_graph_connectivity(G: nx.Graph, points: pd.DataFrame) -> None:
+        """Ensure graph connectivity with optimized edge addition"""
+        start_node = points.shape[0] - 2
+        end_node = points.shape[0] - 1
+        
+        while not nx.has_path(G, start_node, end_node):
+            unconnected_nodes = [i for i in G.nodes if not nx.has_path(G, start_node, i)]
+            if not unconnected_nodes:
+                break
+                
+            closest_node = min(
+                unconnected_nodes,
+                key=lambda i: math.sqrt(
+                    (points.loc[start_node, 'x'] - points.loc[i, 'x'])**2 +
+                    (points.loc[start_node, 'y'] - points.loc[i, 'y'])**2
+                )
+            )
+            G.add_edge(start_node, closest_node)

@@ -13,7 +13,7 @@
     "y_offset": 4636564.89,
     "z_offset": 1365.4,
     "depth": 4,
-    "subsets": 500,
+    "subsets": 1000,
     "resolution": 6000,
     "height_factor": 1000,
     "max_slope": 40,

@@ -21,6 +21,7 @@ with open(p1, "r") as f:
     x_offset = parameters['x_offset']
     y_offset = parameters['y_offset']
     z_offset = parameters['z_offset']
+    random_points_name = parameters['random_points_name']
 
 p2 = os.path.join("src", data_dir)
 
@@ -50,5 +51,6 @@ sorted_points.reset_index(drop=True)
 
 print("Writing points . . .")
 sorted_points.to_csv(p, index=False)
+sorted_points.sample(frac=1).reset_index(drop=True).to_csv(os.path.join("data", f"{random_points_name}.csv"), index=False)
 
 print("Done!\n")
