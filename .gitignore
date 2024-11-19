@@ -6,3 +6,7 @@ src/data/path.csv
 src/data/points.csv
 src/data/random_points.csv
 src/logs/log.csv
+src/data/box1.csv
+src/data/box1_old.csv
+src/data/box1_random.csv
+src/logs/log.csv

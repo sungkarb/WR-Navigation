@@ -143,27 +143,23 @@ class AStar:
 
     def find_path(self, point_a: np.ndarray, point_b: np.ndarray) -> np.ndarray:
         """Main pathfinding method with optimized workflow"""
-        try:
-            points = pd.read_csv(self.random_points_path)
-            p_a = pd.DataFrame(point_a, index=['x', 'y', 'z'])
-            p_b = pd.DataFrame(point_b, index=['x', 'y', 'z'])
+        points = pd.read_csv(self.random_points_path)
+        p_a = pd.DataFrame(point_a, index=['x', 'y', 'z'])
+        p_b = pd.DataFrame(point_b, index=['x', 'y', 'z'])
+        
+        # Optimized point processing
+        points = pd.concat([points, p_a.T, p_b.T], ignore_index=True).drop_duplicates()
+        
+        self.create_subsets(points, p_a, p_b)
+        path_points = self.merge_subsets(p_a, p_b)
+        path, path_i = self._create_final_path(path_points)
+        
+        # Save results
+        pd.DataFrame(path, columns=['x', 'y', 'z']).to_csv(self.path_path, index=False)
+        pd.Series(path_i).to_csv(self.path_i_path, index=False)
+        
+        return path
             
-            # Optimized point processing
-            points = pd.concat([points, p_a.T, p_b.T], ignore_index=True).drop_duplicates()
-            
-            self.create_subsets(points, p_a, p_b)
-            path_points = self.merge_subsets(p_a, p_b)
-            path, path_i = self._create_final_path(path_points)
-            
-            # Save results
-            pd.DataFrame(path, columns=['x', 'y', 'z']).to_csv(self.path_path, index=False)
-            pd.Series(path_i).to_csv(self.path_i_path, index=False)
-            
-            return path
-            
-        except Exception as e:
-            print(f"Error in pathfinding: {str(e)}")
-            raise
 
     def _create_final_path(self, path_points: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         """Create final optimized path"""
