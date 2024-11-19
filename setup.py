@@ -38,10 +38,9 @@ points = pd.DataFrame(np.vstack((las.x, las.y, las.z)).transpose())
 points.columns = ["x", "y", "z"]
 
 print("Processing points . . .")
-for i in range (points.shape[0]):
-    points.at[i, "x"] -= x_offset
-    points.at[i, "y"] -= y_offset
-    points.at[i, "z"] -= z_offset
+points["x"] -= x_offset
+points["y"] -= y_offset
+points["z"] -= z_offset
 
 p = os.path.join(p2, f"{p_name}.csv")
 

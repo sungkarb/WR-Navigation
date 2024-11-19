@@ -4,7 +4,7 @@ import random
 import time
 import numpy as np
 import pandas as pd
-import algorithms
+import algorithms_ai
 
 '''
     higher subsets = takes longer to run
@@ -58,11 +58,11 @@ def main(subs, rsn):
     data = np.ndarray([], dtype=float)
     data = np.append(data, subsets)
     data = np.append(data, resolution)
-    random_points_path = algorithms.random_points_path
+    random_points_path = algorithms_ai.random_points_path
     points = pd.read_csv(random_points_path)
     start_point, end_point = generate_bounds(points)
     start_time = time.time()
-    AStar = algorithms.AStar()
+    AStar = algorithms_ai.AStar()
 
     astar_start = time.time()
     path = AStar.find_path(start_point, end_point)
