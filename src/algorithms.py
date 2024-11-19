@@ -7,6 +7,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from scipy import spatial
+from typing import Tuple
 
 with open("settings.json", "r") as f:
     parameters = json.load(f)
@@ -104,8 +105,7 @@ class AStar:
         start_time = time.time()
         time_array = np.array([])
 
-        path_points = pd.DataFrame(columns=["x", "y", "z"])
-        path_points = pd.concat([path_points, start.T], ignore_index=True, axis=0)
+        path_points = pd.DataFrame(start.T, columns=["x", "y", "z"])
 
         # Define the heuristic function for A*
         def heuristic1(node1, node2) -> float:
@@ -166,7 +166,7 @@ class AStar:
         print(f"\tMerging subsets took {round(end_time - start_time, 5)} seconds\n")
         return path_points
      
-    def create_path(self, path_points: pd.DataFrame) -> (np.ndarray, np.ndarray):
+    def create_path(self, path_points: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         start_time = time.time()
 
         # make new graph using path_points

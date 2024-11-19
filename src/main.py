@@ -6,6 +6,7 @@ import os
 import numpy as np
 import pandas as pd
 import algorithms
+from typing import Tuple
 
 print("Starting . . .\n")
 start_time = time.time()
@@ -38,9 +39,9 @@ print(f"\tEnd point: \t\t{end_point}\n")
 
 random_points_path = os.path.join(data_dir, f"{random_points_name}.csv")
 
-def generate_bounds(points: pd.DataFrame) -> (np.ndarray, np.ndarray):
+def generate_bounds(points: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     # generate a random point from the "points" dataframe
-    minDistance = 800
+    min_distance = 800
     start_index = random.randint(0, points.shape[0]-1)
     end_index = random.randint(0, points.shape[0]-1)
     start = points.loc[start_index]
@@ -50,7 +51,7 @@ def generate_bounds(points: pd.DataFrame) -> (np.ndarray, np.ndarray):
     def distance(p1, p2):
         return math.sqrt((p1["x"] - p2["x"])**2 + (p1["y"] - p2["y"])**2 + (p1["z"] - p2["z"])**2)
 
-    while (distance(start, end) < minDistance):
+    while (distance(start, end) < min_distance):
         start_index = random.randint(0, points.shape[0]-1)
         end_index = random.randint(0, points.shape[0]-1)
         start = points.loc[start_index]
