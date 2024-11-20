@@ -8,12 +8,21 @@ subsets = pd.read_csv(log_path)["subsets"]
 resolution = pd.read_csv(log_path)["resolution"]
 astar_time = pd.read_csv(log_path)["astar"]
 total_time = pd.read_csv(log_path)["total"]
+num_points = pd.read_csv(log_path)["num_points"]
 
-# plot subsets on the x-axis, resolution on the y-axis, and astar_time as the z-axis
-fig = plt.figure()
-ax = fig.add_subplot(projection='3d')
-ax.scatter(subsets, resolution, astar_time, c='r', s=10, marker='.')
-ax.set_xlabel('Subsets')
-ax.set_ylabel('Resolution')
-ax.set_zlabel('Time (s)')
+# subsets / resolution
+eff_rsn = subsets / resolution
+
+eff_points = eff_rsn * num_points
+
+# plot eff_points against astar_time
+fig, ax = plt.subplots()
+
+# color the points based on resolution
+sc = ax.scatter(eff_points, astar_time, c=resolution, cmap='viridis')
+plt.colorbar(sc, label='Resolution')
+
+ax.set_xlabel('Effective Points')
+ax.set_ylabel('A* Time (s)')
+ax.set_title('Effective Points vs. A* Time')
 plt.show()

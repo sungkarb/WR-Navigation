@@ -15,8 +15,8 @@ import algorithms
     sub_step is the step size for the number of subsets (must be positive)
     rsn_step and sub_step must be factors of the difference between s_rsn and e_rsn
 '''
-s_rsn = 4_000
-e_rsn = 2_500
+s_rsn = 6_000
+e_rsn = 4_000
 rsn_step = -500
 sub_step = 250
 
@@ -74,6 +74,7 @@ def main(subs, rsn):
     data = data[1:]
     data = np.append(data, end_time - start_time)
     data = np.append(data, points.shape[0])
+    data = np.append(data, AStar.get_cost())
     with open(os.path.join("logs", "log.csv"), "a", newline='') as f:
         np.savetxt(f, [data], delimiter=",", fmt='%.6f')
     print(data)

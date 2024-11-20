@@ -36,6 +36,9 @@ subsets_path = os.path.join(subsets_dir, f"{subset_name}")
 # giant array
 giant = []
 
+# cost
+cost = 0
+
 """Class to find the most optimal path using A* algorithm for robotics. Target change in elevation
     and distance to target
 """
@@ -121,30 +124,30 @@ class AStar:
 
             # Add nodes from subset
             for i, row in sub.iterrows():
-                    G.add_node(i, x = row['x'], y = row['y'], z = row['z'])
+                G.add_node(i, x = row['x'], y = row['y'], z = row['z'])
 
             # Add edges between the closest nodes (ignoring height)
             coords = sub[['x', 'y']].values
             tree = spatial.KDTree(coords)
             for i, row in sub.iterrows():
-                    distances, indices = tree.query([row['x'], row['y']], k=depth+1)
-                    for j in range(1, len(indices)):  # skip the first index because it is the point itself
-                        G.add_edge(i, indices[j], weight=distances[j])
+                distances, indices = tree.query([row['x'], row['y']], k=depth+1)
+                for j in range(1, len(indices)):  # skip the first index because it is the point itself
+                    G.add_edge(i, indices[j], weight=distances[j])
 
             # check if the graph is connected
             if not nx.is_connected(G):
-                    # start at a node. add an edge to the closest node that is not connected
-                    # repeat until the graph is connected
-                    start_node = sub.shape[0] - 2
-                    end_node = sub.shape[0] - 1
-                    while not nx.has_path(G, start_node, end_node):
-                        # find the closest node that is not connected
-                        for i, row in sub.iterrows():
-                            if not nx.has_path(G, start_node, i):
-                                    w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 
-                                                  + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
-                                    G.add_edge(start_node, i, weight=w)
-                                    break
+                # start at a node. add an edge to the closest node that is not connected
+                # repeat until the graph is connected
+                start_node = sub.shape[0] - 2
+                end_node = sub.shape[0] - 1
+                while not nx.has_path(G, start_node, end_node):
+                    # find the closest node that is not connected
+                    for i, row in sub.iterrows():
+                        if not nx.has_path(G, start_node, i):
+                            w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 
+                                            + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
+                            G.add_edge(start_node, i, weight=w)
+                            break
             
             # Find the shortest path using A*
             path = nx.astar_path(G, sub.shape[0] - 2, sub.shape[0] - 1, heuristic=heuristic1)
@@ -189,9 +192,9 @@ class AStar:
         for i, row in path_points.iterrows():
             _, indices = tree.query([row['x'], row['y'], row['z']], k=depth+1)
             for j in range(1, len(indices)):  # skip the first index because it is the point itself
-                    node1 = i
-                    node2 = indices[j]
-                    G.add_edge(node1, node2, weight=heuristic2(node1, node2))
+                node1 = i
+                node2 = indices[j]
+                G.add_edge(node1, node2, weight=heuristic2(node1, node2))
 
         # check if the graph is connected
         if not nx.is_connected(G):
@@ -200,12 +203,12 @@ class AStar:
             start_node = path_points.shape[0] - 2
             end_node = path_points.shape[0] - 1
             while not nx.has_path(G, start_node, end_node):
-                    # find the closest node that is not connected
-                    for i, row in path_points.iterrows():
-                        if not nx.has_path(G, start_node, i):
-                            w = heuristic2(start_node, i)
-                            G.add_edge(start_node, i, weight=w)
-                            break
+                # find the closest node that is not connected
+                for i, row in path_points.iterrows():
+                    if not nx.has_path(G, start_node, i):
+                        w = heuristic2(start_node, i)
+                        G.add_edge(start_node, i, weight=w)
+                        break
         
         # Find the shortest path using A*
         path_i = nx.astar_path(G, 0, path_points.shape[0] - 1, heuristic=heuristic2)
@@ -217,7 +220,16 @@ class AStar:
         end_time = time.time()
         print(f"\tCreating path took {round(end_time - start_time, 5)} seconds")
 
+        # get the cost of the path taken
+        global cost
+        for i in range(len(path_i) - 1):
+            cost += heuristic2(path_i[i], path_i[i + 1])
+        print(f"\tCost of path: {round(cost, 5)}\n")
+
         return (path, path_i)
+    
+    def get_cost(self) -> float:
+        return cost
      
     """Finds the best path between point A and point B
     
