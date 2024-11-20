@@ -77,7 +77,7 @@ class AStar:
         for i in range(subsets):
             s_t = time.time()
             # Select the subset of points with points_per_subset points
-            sub = points.iloc[i * points_per_subset:(i + 1) * points_per_subset].copy()
+            sub = points[i * points_per_subset:(i + 1) * points_per_subset].copy()
             
             # Add the start and end points to the subset
             sub = pd.concat([sub, start.T, end.T], ignore_index=True)
@@ -141,7 +141,8 @@ class AStar:
                         # find the closest node that is not connected
                         for i, row in sub.iterrows():
                             if not nx.has_path(G, start_node, i):
-                                    w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
+                                    w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 
+                                                  + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
                                     G.add_edge(start_node, i, weight=w)
                                     break
             

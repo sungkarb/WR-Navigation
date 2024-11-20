@@ -1,9 +1,7 @@
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
-import numpy as np
 import os
-import algorithms_ai as algorithms_ai
 
 # read settings.json
 
@@ -21,7 +19,7 @@ path_points = pd.read_csv(os.path.join(data_dir, f"{path_points_name}.csv"))
 path = pd.read_csv(os.path.join(data_dir, f"{path_name}.csv"))
 
 # plot settings
-boldness = 0.1
+boldness = 0.15
 
 # plot the path
 fig = plt.figure()

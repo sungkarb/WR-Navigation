@@ -4,7 +4,7 @@ import random
 import time
 import numpy as np
 import pandas as pd
-import algorithms_ai
+import algorithms
 
 '''
     higher subsets = takes longer to run
@@ -15,8 +15,8 @@ import algorithms_ai
     sub_step is the step size for the number of subsets (must be positive)
     rsn_step and sub_step must be factors of the difference between s_rsn and e_rsn
 '''
-s_rsn = 6_000
-e_rsn = 4_500
+s_rsn = 4_000
+e_rsn = 2_500
 rsn_step = -500
 sub_step = 250
 
@@ -58,11 +58,11 @@ def main(subs, rsn):
     data = np.ndarray([], dtype=float)
     data = np.append(data, subsets)
     data = np.append(data, resolution)
-    random_points_path = algorithms_ai.random_points_path
+    random_points_path = algorithms.random_points_path
     points = pd.read_csv(random_points_path)
     start_point, end_point = generate_bounds(points)
     start_time = time.time()
-    AStar = algorithms_ai.AStar()
+    AStar = algorithms.AStar()
 
     astar_start = time.time()
     path = AStar.find_path(start_point, end_point)
@@ -73,6 +73,7 @@ def main(subs, rsn):
     # remove the first element of data, which is an empty value
     data = data[1:]
     data = np.append(data, end_time - start_time)
+    data = np.append(data, points.shape[0])
     with open(os.path.join("logs", "log.csv"), "a", newline='') as f:
         np.savetxt(f, [data], delimiter=",", fmt='%.6f')
     print(data)
