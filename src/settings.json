@@ -21,7 +21,7 @@
     "data_dir": "data",
     "subsets_dir": "subsets",
     "points_name": "points",
-    "random_points_name": "random_points",
+    "random_points_name": "box1_random",
     "path_points_name": "path_points",
     "path_name": "path",
     "path_i_name": "path_i",

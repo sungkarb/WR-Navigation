@@ -41,7 +41,7 @@ random_points_path = os.path.join(data_dir, f"{random_points_name}.csv")
 
 def generate_bounds(points: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
     # generate a random point from the "points" dataframe
-    min_distance = 800
+    min_distance = 400
     start_index = random.randint(0, points.shape[0]-1)
     end_index = random.randint(0, points.shape[0]-1)
     start = points.loc[start_index]
@@ -65,7 +65,8 @@ def generate_bounds(points: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
 print("Initializing . . .")
 init_start = time.time()
 points = pd.read_csv(random_points_path)
-# start_point, end_point = generate_bounds(points)
+print(f"Number of points: {points.shape[0]}")
+start_point, end_point = generate_bounds(points)
 AStar = algorithms.AStar()
 init_end = time.time()
 print(f"Initialization took {round(init_end - init_start, 5)} seconds\n")
