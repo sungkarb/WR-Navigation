@@ -39,6 +39,9 @@ giant = []
 # cost
 cost = 0
 
+# length of the path
+path_length = 0
+
 """Class to find the most optimal path using A* algorithm for robotics. Target change in elevation
     and distance to target
 """
@@ -53,6 +56,8 @@ class AStar:
         # points = pd.DataFrame(data, columns=['x', 'y', 'z'])
         # points.drop_duplicates(inplace=True)
         # points.sample(frac=1).reset_index(drop=True).to_csv(random_points_path, index=False)
+        global cost; cost = 0
+        global path_length; path_length = 0
         global subsets
         global resolution
         with open("settings.json", "r") as f:
@@ -102,6 +107,9 @@ class AStar:
 
     def heur_dist(self, x1, y1, x2, y2) -> float:
             return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+    def distance(self, x1, y1, z1, x2, y2, z2) -> float:
+        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     
     
     def merge_subsets(self, start: pd.DataFrame, end: pd.DataFrame) -> pd.DataFrame:
@@ -226,10 +234,19 @@ class AStar:
             cost += heuristic2(path_i[i], path_i[i + 1])
         print(f"\tCost of path: {round(cost, 5)}\n")
 
+        # get the length of the path taken
+        global path_length
+        for i in range(len(path) - 1):
+            path_length += self.distance(path[i][0], path[i][1], path[i][2], path[i + 1][0], path[i + 1][1], path[i + 1][2])
+        print(f"\tLength of path: {round(path_length, 5)}\n")
+
         return (path, path_i)
     
     def get_cost(self) -> float:
         return cost
+
+    def get_path_length(self) -> float:
+        return path_length
      
     """Finds the best path between point A and point B
     

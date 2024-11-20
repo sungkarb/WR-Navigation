@@ -19,5 +19,7 @@ def estimate_time(subsets, resolution, num_points):
     # read the log.csv file
     log_path = os.path.join("logs", "log.csv")
     log = pd.read_csv(log_path)
+    
+    # calculate the number of effective points
 
 estimate_time(1000, 5000, 11161732)

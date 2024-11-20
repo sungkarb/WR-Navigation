@@ -4,6 +4,8 @@ import random
 import time
 import numpy as np
 import pandas as pd
+from typing import Tuple
+
 import algorithms
 
 '''
@@ -30,7 +32,7 @@ if (e_rsn - s_rsn) % sub_step != 0:
 if (sub_step < 0) or (rsn_step > 0):
     raise ValueError("sub_step must be positive and rsn_step must be negative")
 
-def generate_bounds(points) -> (np.ndarray, np.ndarray):
+def generate_bounds(points) -> Tuple[np.ndarray, np.ndarray]:
     min_distance = 800
     num_points = points.shape[0]
 
@@ -50,6 +52,8 @@ def main(subs, rsn):
     resolution = rsn
     with open("settings.json", "r") as f:
         parameters = json.load(f)
+        start_point = parameters['start_point']
+        end_point = parameters['end_point']
         parameters['subsets'] = subsets
         parameters['resolution'] = resolution
     with open("settings.json", "w") as f:
@@ -60,7 +64,6 @@ def main(subs, rsn):
     data = np.append(data, resolution)
     random_points_path = algorithms.random_points_path
     points = pd.read_csv(random_points_path)
-    start_point, end_point = generate_bounds(points)
     start_time = time.time()
     AStar = algorithms.AStar()
 
@@ -75,9 +78,16 @@ def main(subs, rsn):
     data = np.append(data, end_time - start_time)
     data = np.append(data, points.shape[0])
     data = np.append(data, AStar.get_cost())
+    data = np.append(data, AStar.get_path_length())
+
     with open(os.path.join("logs", "log.csv"), "a", newline='') as f:
         np.savetxt(f, [data], delimiter=",", fmt='%.6f')
     print(data)
+
+
+# set the header of the csv file
+with open(os.path.join("logs", "log.csv"), "w", newline='') as f:
+    np.savetxt(f, ["subsets,resolution,astar,total,num_points,cost,path_length"], fmt='%s')
 
 for rsn in range(s_rsn, e_rsn-1, rsn_step):
     for sub in range(sub_step, rsn+1, sub_step):

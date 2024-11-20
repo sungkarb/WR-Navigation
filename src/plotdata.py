@@ -9,20 +9,24 @@ resolution = pd.read_csv(log_path)["resolution"]
 astar_time = pd.read_csv(log_path)["astar"]
 total_time = pd.read_csv(log_path)["total"]
 num_points = pd.read_csv(log_path)["num_points"]
+cost = pd.read_csv(log_path)["cost"]
 
 # subsets / resolution
 eff_rsn = subsets / resolution
 
-eff_points = eff_rsn * num_points
+eff_points = eff_rsn * num_points / 1_000_000
 
-# plot eff_points against astar_time
-fig, ax = plt.subplots()
+# plot eff_points, astar_time, and cost on a 3d plot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
 
 # color the points based on resolution
-sc = ax.scatter(eff_points, astar_time, c=resolution, cmap='viridis')
-plt.colorbar(sc, label='Resolution')
+ax.scatter(eff_points, astar_time, cost, s=7, c=resolution, cmap='turbo')
 
-ax.set_xlabel('Effective Points')
+# add color bar
+cbar = plt.colorbar(ax.scatter(eff_points, astar_time, cost, s=5, c=resolution, cmap='turbo'))
+
+ax.set_xlabel('Effective Points (millions)')
 ax.set_ylabel('A* Time (s)')
-ax.set_title('Effective Points vs. A* Time')
+ax.set_zlabel('Cost')
 plt.show()
