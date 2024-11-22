@@ -28,7 +28,7 @@ for rsn in range(s_rsn, e_rsn-1, rsn_step):
     for sub in range(sub_step, rsn+1, sub_step):
         iter += 1
 
-print(iter)
+print(f"Total iterations: {iter}")
 
 # Check if the parameters are valid
 if (s_rsn < e_rsn):

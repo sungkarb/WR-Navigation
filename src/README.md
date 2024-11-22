@@ -1,4 +1,15 @@
+# Improvements (please help me)
+- Optimize everything (`algorithms.py` mainly)
+- Add in the unimplemented features/files
+    - Max slope setting (set it to 45 degrees): the path is limited by this slope
+    - `runtime.py` script:
+        - Estimates the time it takes to find a path given certain parameters
+    - Documentation for everything
+        - `algorithms.py` has some (outdated) but none of the other files do
+- Everything is a DataFrame since I don't know how to use the numpy library
+    - Convert things to Numpy: np.ndarray types
 # How to use the data logger
+- *See also: [logdata.py docs](#datalogger)*
 ## Setup for `logdata.py`
 - Open `logdata.py`
 - Edit the data logging parameters at the top
@@ -6,8 +17,10 @@
 	- Assume each iteration takes 5 minutes
 - Data will be uploaded to `src/logs/log.csv/`
 - If you want to run the data logger again, make sure to save the previous run (rename the file) or else all of the new data will be added to the same file
-# algorithms.py docs
-## Parameters (settings.json)
+# `algorithms.py` docs
+## About
+- File that encapsulates the path-finding process. Uses a *"divide and conquer"* like strategy to break up the dataset into sparser subsets, and then recompiles the subsets before using the A\* algorithm to create the final path. 
+## Parameters (settings.json) {#parameters}
 - `depth`: int
 	- Controls the maximum number of edges a node may have in any of the graphs used in path-finding (both for the subsets and for the main path)
 - `subsets`: int
@@ -29,7 +42,7 @@
 - `path_points`: array
 	- Stores all of the points after every subset gets processed. These points are used to then find the best path in method `create_path()`
 -  `path`: array
-	- Stores all of the points used in the best path including the start and end points. Calculated in method `create_path`
+	- Stores all of the points used in the best path including the start and end points. Calculated in method `create_path()`
 - `path_i`: array
 	- Stores the indices of points that `path` uses from the array `path_points`
 
@@ -65,9 +78,17 @@
 	- Returns the points of the path and the indices of the path points relative to variable `path_points`
 ## Other notes/terms
 - Effective resolution is the fraction of points used from variable `points`. For example, if it says "Effective Resolution: 0.1 (500/5000)" then you are using one tenth of all points in finding the best path, and are doing so with 500 subsets, with each subset having 1/5000 points from the variable `points`
-## Things that could be a lot better but im bad at coding
-- Optimize everything maybe
-- Add in the unimplemented features
-    - Max slope setting (set it to 45 degrees if possible)
-- Everything is a DataFrame since I don't know how to use the numpy library
-    - Convert things to Numpy: np.ndarray
+# `logdata.py` docs {#logdata}
+## About
+- A driver of `algorithms.py` that logs the data related to the path generated. Logs subsets, resolution, A* time, total time, number of points, cost of path, and path length into a `csv` file.
+## Parameters
+- ` s_rsn`: int
+    - The starting resolution. The logger will begin logging at this specified resolution. 
+    - *See also: [Parameters: resolution](#parameters)*
+- `e_rsn`: int
+    - The ending resolution (inclusive). The logger will still collect data at this resolution.
+- `rsn_step`: int
+    - The step size for resolution. The second resolution run by the data logger will be at `s_rsn + rsn_step`. These "steps" will be taken until `e_rsn` is hit.
+- `sub_step`: int
+    - The starting and step number of subsets that the data logger will use. These "steps" will be taken until the target resolution is hit, then the number of subsets will be reset once the next resolution is being run. 
+    - *See also: [Parameters: subsets](#parameters)*
