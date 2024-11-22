@@ -68,5 +68,6 @@
 ## Things that could be a lot better but im bad at coding
 - Optimize everything maybe
 - Add in the unimplemented features
+    - Max slope setting (set it to 45 degrees if possible)
 - Everything is a DataFrame since I don't know how to use the numpy library
-- It is 2:21 AM
+    - Convert things to Numpy: np.ndarray

@@ -17,7 +17,7 @@ import json
 # function that takes in subsets, resolution, and number of points and outputs the time
 def estimate_time(subsets, resolution, num_points):
     # read the log.csv file
-    log_path = os.path.join("logs", "log.csv")
+    log_path = os.path.join("logs", "log1.csv")
     log = pd.read_csv(log_path)
     
     # calculate the number of effective points

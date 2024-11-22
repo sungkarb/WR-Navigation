@@ -19,11 +19,9 @@
     "max_slope": 40,
     "slope_factor": 0.005,
     "data_dir": "data",
-    "subsets_dir": "subsets",
     "points_name": "points",
     "random_points_name": "random_points",
     "path_points_name": "path_points",
     "path_name": "path",
-    "path_i_name": "path_i",
-    "subset_name": "subset"
+    "path_i_name": "path_i"
 }
