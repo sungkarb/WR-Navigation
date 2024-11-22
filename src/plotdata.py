@@ -29,7 +29,7 @@ ax.scatter(eff_rsn, astar_time, eff_cost, s=7, c=resolution, cmap='turbo')
 # add color bar
 cbar = plt.colorbar(ax.scatter(eff_rsn, astar_time, eff_cost, s=5, c=resolution, cmap='turbo'))
 
-ax.set_xlabel('Effective Points (millions)')
+ax.set_xlabel('Effective Resolution')
 ax.set_ylabel('A* Time (s)')
-ax.set_zlabel('Cost')
+ax.set_zlabel('Cost per Path Length')
 plt.show()

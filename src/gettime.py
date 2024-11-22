@@ -1,5 +1,5 @@
 '''
-This script calculates the total time spent on the project.
+This script calculates the total time spent on a log file.
 '''
 
 import pandas as pd
@@ -23,4 +23,4 @@ if (str(seconds).__len__() == 1):
     seconds = "0" + str(seconds)
 
 print(f"Total time: {hours}:{minutes}:{seconds} (hh:mm:ss)")
-print(f"Average time per run: {total_time.mean()} seconds")
+print(f"Average time per iteration: {total_time.mean()} seconds")
