@@ -5,7 +5,7 @@ This script calculates the total time spent on the project.
 import pandas as pd
 import os
 
-log_path = os.path.join("logs", "log.csv")
+log_path = os.path.join("logs", "log_old.csv")
 total_time = pd.read_csv(log_path)["total"]
 
 # get the sum of the total_time column
@@ -23,3 +23,4 @@ if (str(seconds).__len__() == 1):
     seconds = "0" + str(seconds)
 
 print(f"Total time: {hours}:{minutes}:{seconds} (hh:mm:ss)")
+print(f"Average time per run: {total_time.mean()} seconds")

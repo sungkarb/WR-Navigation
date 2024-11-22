@@ -17,10 +17,18 @@ import algorithms
     sub_step is the step size for the number of subsets (must be positive)
     rsn_step and sub_step must be factors of the difference between s_rsn and e_rsn
 '''
+
 s_rsn = 6_000
 e_rsn = 4_000
-rsn_step = -500
-sub_step = 250
+rsn_step = -400
+sub_step = 100
+
+iter = 0
+for rsn in range(s_rsn, e_rsn-1, rsn_step):
+    for sub in range(sub_step, rsn+1, sub_step):
+        iter += 1
+
+print(iter)
 
 # Check if the parameters are valid
 if (s_rsn < e_rsn):
