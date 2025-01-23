@@ -23,5 +23,7 @@
     "random_points_name": "random_points",
     "path_points_name": "path_points",
     "path_name": "path",
-    "path_i_name": "path_i"
+    "path_i_name": "path_i",
+    "subsets_dir": "subsets",
+    "subset_name": "subset"
 }
