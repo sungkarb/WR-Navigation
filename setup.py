@@ -21,7 +21,6 @@ with open(p1, "r") as f:
     x_offset = parameters['x_offset']
     y_offset = parameters['y_offset']
     z_offset = parameters['z_offset']
-    random_points_name = parameters['random_points_name']
 
 p2 = os.path.join("src", data_dir)
 

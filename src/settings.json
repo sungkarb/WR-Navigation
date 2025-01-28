@@ -25,5 +25,8 @@
     "path_name": "path",
     "path_i_name": "path_i",
     "subsets_dir": "subsets",
-    "subset_name": "subset"
+    "subset_name": "subset",
+    "boxes_raw_dir": "boxes raw",
+    "boxes_csv_dir": "boxes csv",
+    "boxes_random_dir": "boxes random"
 }

@@ -1,5 +1,7 @@
 robotics/
-map_data/boxes/
+map_data/boxes raw/
+map_data/boxes csv/
+map_data/boxes random/
 __pycache__/
 src/data/path_i.csv
 src/data/path_points.csv
