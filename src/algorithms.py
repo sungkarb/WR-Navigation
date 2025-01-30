@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy import spatial
 from typing import Tuple
+import multiprocessing as mp
 
 with open("settings.json", "r") as f:
     parameters = json.load(f)
@@ -18,6 +19,7 @@ with open("settings.json", "r") as f:
     max_slope = parameters['max_slope']
     slope_factor = parameters['slope_factor']
 
+
     # file paths and names
     data_dir = parameters['data_dir']
     subsets_dir = parameters['subsets_dir']
@@ -26,6 +28,9 @@ with open("settings.json", "r") as f:
     path_name = parameters['path_name']
     path_i_name = parameters['path_i_name']
     subset_name = parameters['subset_name']
+
+    # Processes for multiprocessing
+    processes_param = parameters['processes_mult']
 
 random_points_path = os.path.join(data_dir, f"{random_points_name}.csv")
 path_points_path = os.path.join(data_dir, f"{path_points_name}.csv")
@@ -111,60 +116,62 @@ class AStar:
     def distance(self, x1, y1, z1, x2, y2, z2) -> float:
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     
-    
-    def merge_subsets(self, start: pd.DataFrame, end: pd.DataFrame) -> pd.DataFrame:
-        start_time = time.time()
-        time_array = np.array([])
-
-        path_points = pd.DataFrame(start.T, columns=["x", "y", "z"])
-
-        # Define the heuristic function for A*
+    def process_subset(self, sub : pd.DataFrame):
         def heuristic1(node1, node2) -> float:
             x1, y1 = G.nodes[node1]['x'], G.nodes[node1]['y']
             x2, y2 = G.nodes[node2]['x'], G.nodes[node2]['y']
             return AStar.heur_dist(self, x1, y1, x2, y2)
 
-        for k in range(subsets):
-            s_t = time.time()
-            #sub = pd.read_csv(os.path.join(subsets_path, f"{subset_name}{k}.csv"))
-            sub = giant[k]
-            G = nx.Graph()
+        s_t = time.time()
+        #sub = pd.read_csv(os.path.join(subsets_path, f"{subset_name}{k}.csv"))
+        G = nx.Graph()
 
             # Add nodes from subset
-            for i, row in sub.iterrows():
-                G.add_node(i, x = row['x'], y = row['y'], z = row['z'])
+        for i, row in sub.iterrows():
+            G.add_node(i, x = row['x'], y = row['y'], z = row['z'])
 
             # Add edges between the closest nodes (ignoring height)
-            coords = sub[['x', 'y']].values
-            tree = spatial.KDTree(coords)
-            for i, row in sub.iterrows():
-                distances, indices = tree.query([row['x'], row['y']], k=depth+1)
-                for j in range(1, len(indices)):  # skip the first index because it is the point itself
-                    G.add_edge(i, indices[j], weight=distances[j])
+        coords = sub[['x', 'y']].values
+        tree = spatial.KDTree(coords)
+        for i, row in sub.iterrows():
+            distances, indices = tree.query([row['x'], row['y']], k=depth+1)
+            for j in range(1, len(indices)):  # skip the first index because it is the point itself
+                G.add_edge(i, indices[j], weight=distances[j])
 
             # check if the graph is connected
-            if not nx.is_connected(G):
+        if not nx.is_connected(G):
                 # start at a node. add an edge to the closest node that is not connected
                 # repeat until the graph is connected
-                start_node = sub.shape[0] - 2
-                end_node = sub.shape[0] - 1
-                while not nx.has_path(G, start_node, end_node):
+            start_node = sub.shape[0] - 2
+            end_node = sub.shape[0] - 1
+            while not nx.has_path(G, start_node, end_node):
                     # find the closest node that is not connected
-                    for i, row in sub.iterrows():
-                        if not nx.has_path(G, start_node, i):
-                            w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 
+                for i, row in sub.iterrows():
+                    if not nx.has_path(G, start_node, i):
+                        w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 
                                             + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
-                            G.add_edge(start_node, i, weight=w)
-                            break
+                        G.add_edge(start_node, i, weight=w)
+                        break
             
             # Find the shortest path using A*
-            path = nx.astar_path(G, sub.shape[0] - 2, sub.shape[0] - 1, heuristic=heuristic1)
-            path = pd.Series(path)
-            
+        path = nx.astar_path(G, sub.shape[0] - 2, sub.shape[0] - 1, heuristic=heuristic1)
+        path = pd.Series(path)
+        return sub.loc[path]
+        
+    def merge_subsets(self, start: pd.DataFrame, end: pd.DataFrame) -> pd.DataFrame:
+        s_t = time.time()
+        time_array = np.array([])
+
+        path_points = pd.DataFrame(start.T, columns=["x", "y", "z"])
+
+        # Define the heuristic function for A*
             # add path to path_points
-            path_points = pd.concat([path_points, sub.loc[path]], ignore_index=True, axis=0)
-            e_t = time.time()
-            time_array = np.append(time_array, e_t - s_t)
+        # cpu_count = mp.cpu_count
+        with mp.Pool(processes=processes_param) as pool:
+            result = pool.map(self.process_subset, giant)
+        path_points = pd.concat(result, ignore_index=True)
+        e_t = time.time()
+        time_array = np.append(time_array, e_t - s_t)
 
         path_points.drop_duplicates(inplace=True, keep='first')
         path_points.reset_index(drop=True, inplace=True)
@@ -175,9 +182,10 @@ class AStar:
         avg_time = np.mean(time_array)
         end_time = time.time()
         print(f"\tPathing each subset took an average of {round(avg_time, 5)} seconds")
-        print(f"\tMerging subsets took {round(end_time - start_time, 5)} seconds\n")
+        print(f"\tMerging subsets took {round(end_time - s_t, 5)} seconds\n")
         return path_points
      
+    
     def create_path(self, path_points: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         start_time = time.time()
 
