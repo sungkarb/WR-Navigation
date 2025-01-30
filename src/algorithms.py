@@ -122,7 +122,6 @@ class AStar:
             x2, y2 = G.nodes[node2]['x'], G.nodes[node2]['y']
             return AStar.heur_dist(self, x1, y1, x2, y2)
 
-        s_t = time.time()
         #sub = pd.read_csv(os.path.join(subsets_path, f"{subset_name}{k}.csv"))
         G = nx.Graph()
 
@@ -138,7 +137,7 @@ class AStar:
             for j in range(1, len(indices)):  # skip the first index because it is the point itself
                 G.add_edge(i, indices[j], weight=distances[j])
 
-            # check if the graph is connected
+        # check if the graph is connected
         if not nx.is_connected(G):
                 # start at a node. add an edge to the closest node that is not connected
                 # repeat until the graph is connected
@@ -153,7 +152,7 @@ class AStar:
                         G.add_edge(start_node, i, weight=w)
                         break
             
-            # Find the shortest path using A*
+        # Find the shortest path using A*
         path = nx.astar_path(G, sub.shape[0] - 2, sub.shape[0] - 1, heuristic=heuristic1)
         path = pd.Series(path)
         return sub.loc[path]
