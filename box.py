@@ -8,13 +8,8 @@ import pandas as pd
 import laspy
 import numpy as np
 
-try:
-    with open(os.path.join("map_data", "boxes raw"), "r") as f:
-        print()
-except FileNotFoundError:
-    print("Create a directory named \"boxes raw\" inside of the \"map_data\" directory")
-    print("Then make sure inside \"boxes raw\", there is box1.laz, box2.laz ... box12.laz")
-    raise 
+print("Create a directory named \"boxes raw\" inside of the \"map_data\" directory")
+print("Then make sure inside \"boxes raw\", there is box1.laz, box2.laz ... box12.laz")
 
 print("Starting . . .")
 settings_path = os.path.join("src", "settings.json")
