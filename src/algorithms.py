@@ -116,7 +116,7 @@ class AStar:
     def distance(self, x1, y1, z1, x2, y2, z2) -> float:
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     
-    def process_subset(self, sub: pd.DataFrame):
+    def process_subset(self, sub : pd.DataFrame):
         def heuristic1(node1, node2) -> float:
             x1, y1 = G.nodes[node1]['x'], G.nodes[node1]['y']
             x2, y2 = G.nodes[node2]['x'], G.nodes[node2]['y']
@@ -137,7 +137,7 @@ class AStar:
             for j in range(1, len(indices)):  # skip the first index because it is the point itself
                 G.add_edge(i, indices[j], weight=distances[j])
 
-        # check if the graph is connected
+            # check if the graph is connected
         if not nx.is_connected(G):
                 # start at a node. add an edge to the closest node that is not connected
                 # repeat until the graph is connected
@@ -152,14 +152,14 @@ class AStar:
                         G.add_edge(start_node, i, weight=w)
                         break
             
-        # Find the shortest path using A*
+            # Find the shortest path using A*
         path = nx.astar_path(G, sub.shape[0] - 2, sub.shape[0] - 1, heuristic=heuristic1)
         path = pd.Series(path)
         return sub.loc[path]
         
     def merge_subsets(self, start: pd.DataFrame, end: pd.DataFrame) -> pd.DataFrame:
         s_t = time.time()
-        time_array = np.array([])
+        # time_array = np.array([])
 
         path_points = pd.DataFrame(start.T, columns=["x", "y", "z"])
 
@@ -169,8 +169,8 @@ class AStar:
         with mp.Pool(processes=processes_param) as pool:
             result = pool.map(self.process_subset, giant)
         path_points = pd.concat(result, ignore_index=True)
-        e_t = time.time()
-        time_array = np.append(time_array, e_t - s_t)
+        # e_t = time.time()
+        # time_array = np.append(time_array, e_t - s_t)
 
         path_points.drop_duplicates(inplace=True, keep='first')
         path_points.reset_index(drop=True, inplace=True)
@@ -178,10 +178,10 @@ class AStar:
         path_points = pd.concat([path_points, end.T], ignore_index=True, axis=0)
         path_points.to_csv(path_points_path, index=False)
 
-        avg_time = np.mean(time_array)
+        # avg_time = np.mean(time_array)
         end_time = time.time()
-        print(f"\tPathing each subset took an average of {round(avg_time, 5)} seconds")
-        print(f"\tMerging subsets took {round(end_time - s_t, 5)} seconds\n")
+        # print(f"\tPathing each subset took an average of {round(avg_time, 5)} seconds")
+        print(f"\tMerging subsets took {round(end_time - s_t, 3)} seconds\n")
         return path_points
      
     
@@ -233,19 +233,19 @@ class AStar:
         path = path.to_numpy()
 
         end_time = time.time()
-        print(f"\tCreating path took {round(end_time - start_time, 5)} seconds")
+        print(f"\tCreating path took {round(end_time - start_time, 3)} seconds")
 
         # get the cost of the path taken
         global cost
         for i in range(len(path_i) - 1):
             cost += heuristic2(path_i[i], path_i[i + 1])
-        print(f"\tCost of path: {round(cost, 5)}\n")
+        print(f"\tCost of path: {round(cost, 3)}\n")
 
         # get the length of the path taken
         global path_length
         for i in range(len(path) - 1):
             path_length += self.distance(path[i][0], path[i][1], path[i][2], path[i + 1][0], path[i + 1][1], path[i + 1][2])
-        print(f"\tLength of path: {round(path_length, 5)}\n")
+        print(f"\tLength of path: {round(path_length, 3)}\n")
 
         return (path, path_i)
     
@@ -265,37 +265,33 @@ class AStar:
         Path of points through the graph representes as an array with shape (m, 3)
     """
     def find_path(self, point_a: np.ndarray, point_b: np.ndarray) -> np.ndarray:
+        print("Initializing . . .")
+        read_start = time.time()
+        print("\tReading csv")
+        points = pd.read_csv(random_points_path, engine='pyarrow')
+        print(f"\tNumber of points {points.shape[0]}")
+        read_end = time.time()
+        print(f"\tReading csv took {round(read_end - read_start, 3)} seconds")
         print("\tAdding start and end points")
         p_a = pd.DataFrame(point_a, index=['x', 'y', 'z'])
         p_b = pd.DataFrame(point_b, index=['x', 'y', 'z'])
-        p_df = pd.concat([p_a.T, p_b.T], ignore_index=True, axis=0)
-        p_df.to_csv(mode='a', index=False)
-
-        print("\tReading Points . . .")
-        read_start = time.time()
-        points = pd.read_csv(random_points_path, dtype={'x': 'float64', 'y': 'float64', 'z': 'float64'}, engine='pyarrow')
-        read_end = time.time()
-        print(f"\t\tReading took {round(read_end - read_start, 5)} seconds")
-        print(f"\tNumber of points: {points.shape[0]}")
-        print(points.head())
-
-        print("\tCreating subsets . . .")
+        points = pd.concat([points, p_a.T, p_b.T], ignore_index=True, axis=0)
+        points.drop_duplicates(inplace=True)
+        print("\tCreating subsets")
         AStar.create_subsets(self, points, p_a, p_b)
-
-        print("\tMerging subsets . . .")
+        print("\tMerging subsets")
         path_points = AStar.merge_subsets(self, p_a, p_b)
-
-        print("\tGenerating final path . . .")
+        print("\tGenerating final path")
         path, path_i = AStar.create_path(self, path_points)
 
         start_time = time.time()
-
+        print("\tSaving path")
         temp_path = pd.DataFrame(path, columns=['x', 'y', 'z'])
         temp_path.to_csv(path_path, index=False)
         path_i = pd.Series(path_i)
         path_i.to_csv(path_i_path, index=False)
 
         end_time = time.time()
-        print(f"\tSaving path took {round(end_time - start_time, 5)} seconds\n")
+        print(f"\tSaving path took {round(end_time - start_time, 3)} seconds\n")
 
         return path

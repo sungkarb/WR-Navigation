@@ -63,9 +63,7 @@ def main():
         print("End point: ", end["x"], end["y"], end["z"])
         print()
         return start, end
-    
-    # points = pd.read_csv(random_points_path, low_memory=True)
-    # print(f"Number of points: {points.shape[0]}")
+
     # start_point, end_point = generate_bounds(points)
     AStar = algorithms.AStar()
 

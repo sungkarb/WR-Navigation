@@ -23,10 +23,13 @@ for i, n in enumerate(indices):
 
 print("Joining boxes")
 rectangle = pd.DataFrame()
-rectangle = pd.concat([boxes], ignore_index=True)
+rectangle = pd.concat(boxes, ignore_index=True)
+rectangle.drop_duplicates(inplace=True)
 
 print("Writing to csv (sorted ish)")
-rectangle.to_csv(os.path.join(dest, "rectangle.csv"), index=False)
+sorted_points = rectangle.sort_values(by=['x', 'y', 'z'])
+sorted_points.reset_index(drop=True)
+sorted_points.to_csv(os.path.join(dest, "rectangle.csv"), index=False)
 
 print("Writing to csv (randomized)")
 rectangle_random_path = os.path.join("src", "data", "rectangle_random.csv")

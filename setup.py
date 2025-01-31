@@ -49,6 +49,6 @@ sorted_points.reset_index(drop=True)
 
 print("Writing points . . .")
 sorted_points.to_csv(p, index=False)
-sorted_points.sample(frac=1).reset_index(drop=True).to_csv(os.path.join("data", f"{random_points_name}.csv"), index=False)
+sorted_points.sample(frac=1).to_csv(os.path.join("src", "data", f"{random_points_name}.csv"), index=False)
 
 print("Done!\n")
