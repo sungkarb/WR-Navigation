@@ -29,5 +29,5 @@
     "boxes_raw_dir": "boxes raw",
     "boxes_csv_dir": "boxes csv",
     "boxes_random_dir": "boxes random",
-    "processes_mult": 13
+    "processes_mult": 11
 }
