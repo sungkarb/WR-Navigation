@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Install python management packages
-sudo apt update
-sudo apt upgrade
-sudo apt-get install python3-pip
-sudo apt install python3-venv
-
 # Set the virtual environment directory
 VENV_DIR="robotics"
 
