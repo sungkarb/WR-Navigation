@@ -68,7 +68,7 @@ def main():
     init_start = time.time()
     points = pd.read_csv(random_points_path)
     print(f"Number of points: {points.shape[0]}")
-    # start_point, end_point = generate_bounds(points)
+    start_point, end_point = generate_bounds(points)
     AStar = algorithms.AStar()
     init_end = time.time()
     print(f"Initialization took {round(init_end - init_start, 5)} seconds\n")

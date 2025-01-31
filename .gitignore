@@ -13,4 +13,5 @@ src/data/box1.csv
 src/data/box1_old.csv
 src/data/box1_random.csv
 src/data/rectangle.csv
+src/data/rectangle_random.csv
 src/logs/log.csv
