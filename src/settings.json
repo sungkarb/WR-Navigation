@@ -1,26 +1,26 @@
 {
     "start_point": [
-        1200,
-        200,
-        8
+        516839.34,
+        4252795.26,
+        1401.86
     ],
     "end_point": [
-        800,
-        700,
-        9
+        521245.26,
+        4250998.71,
+        1340.74
     ],
     "x_offset": -12333899.21,
     "y_offset": 4636564.89,
     "z_offset": 1365.4,
     "depth": 4,
-    "subsets": 4000,
-    "resolution": 4000,
+    "subsets": 1000,
+    "resolution": 10000000,
     "height_factor": 1000,
     "max_slope": 40,
     "slope_factor": 0.005,
     "data_dir": "data",
     "points_name": "points",
-    "random_points_name": "random_points",
+    "random_points_name": "rectangle_random",
     "path_points_name": "path_points",
     "path_name": "path",
     "path_i_name": "path_i",

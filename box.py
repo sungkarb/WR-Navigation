@@ -39,4 +39,4 @@ for i in range(1, 13):
     box.to_csv(os.path.join(boxes_csv_dir, box_name), index=False)
     box.sample(frac=1).reset_index(drop=True).to_csv(os.path.join(boxes_random_dir, box_name), index=False)
 
-print("Done")
+print("Done!\n")

@@ -63,19 +63,15 @@ def main():
         print("End point: ", end["x"], end["y"], end["z"])
         print()
         return start, end
-
-    print("Initializing . . .")
-    init_start = time.time()
-    points = pd.read_csv(random_points_path)
-    print(f"Number of points: {points.shape[0]}")
-    start_point, end_point = generate_bounds(points)
+    
+    # points = pd.read_csv(random_points_path, low_memory=True)
+    # print(f"Number of points: {points.shape[0]}")
+    # start_point, end_point = generate_bounds(points)
     AStar = algorithms.AStar()
-    init_end = time.time()
-    print(f"Initialization took {round(init_end - init_start, 5)} seconds\n")
 
     print("Finding path . . .")
     astar_start = time.time()
-    path = AStar.find_path(start_point, end_point)
+    _ = AStar.find_path(start_point, end_point)
     astar_end = time.time()
     print(f"Path finding took {round(astar_end - astar_start, 5)} seconds\n")
 
