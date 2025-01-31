@@ -27,8 +27,10 @@ and saves it in csv
 Args:
     box_file: path to the box file which must be laz file
 """
-def box_to_gps(box_file: str) -> np.ndarray:
-    result_name = box_file + ".csv"
+def box_to_gps(box_file: str, result_name=None) -> np.ndarray:
+    if not result_name:
+        result_name = box_file + ".csv"
+        
     with laspy.open(box_file) as f:
         las = f.read()
 
