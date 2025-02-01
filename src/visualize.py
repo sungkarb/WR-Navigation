@@ -24,7 +24,7 @@ boldness = 0.1
 # plot the path
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
-ax.scatter(path_points["x"], path_points["y"], path_points["z"], c='r', s=boldness*res, marker='.')
+ax.scatter(path_points["x"], path_points["y"], path_points["z"], c='r', s=boldness, marker='.')
 ax.plot(path["x"], path["y"], path["z"], c='b', linewidth=1)
 ax.set_xlabel('X axis (m)')
 ax.set_ylabel('Y axis (m)')
