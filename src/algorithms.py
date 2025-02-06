@@ -1,5 +1,5 @@
 import json
-import math
+from math import sqrt, hypot
 import os
 import random as random
 import time as time
@@ -70,15 +70,15 @@ class AStar:
             subsets = parameters['subsets']
             resolution = parameters['resolution']
 
-    # helper methods
-    def slope_angle(self, x1, y1, z1, x2, y2, z2) -> float:
-        # v dot w = |v||w|cos(theta)
-        # theta = arccos(v dot w / |v||w|)
-        v = np.array([(x2 - x1), (y2 - y1), (z2 - z1)])
-        v_norm = np.linalg.norm(v)
-        if v_norm == 0:
-            return 0
-        return abs(math.degrees(math.acos(abs(z2 - z1) / v_norm)))
+    # # helper methods
+    # def slope_angle(self, x1, y1, z1, x2, y2, z2) -> float:
+    #     # v dot w = |v||w|cos(theta)
+    #     # theta = arccos(v dot w / |v||w|)
+    #     v = np.array([(x2 - x1), (y2 - y1), (z2 - z1)])
+    #     v_norm = np.linalg.norm(v)
+    #     if v_norm == 0:
+    #         return 0
+    #     return abs(math.degrees(math.acos(abs(z2 - z1) / v_norm)))
     
     def create_subsets(self, points: pd.DataFrame, start: pd.DataFrame, end: pd.DataFrame) -> None:
         start_time = time.time()
@@ -107,14 +107,14 @@ class AStar:
 
     # heuristic function: greater return value means greater cost for the path (best path has low cost)
     def heur(self, x1, y1, z1, x2, y2, z2) -> float:
-        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + height_factor * (z2 - z1) ** 2)
+        return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + height_factor * (z2 - z1) ** 2)
         #  + slope_factor * slope_angle(x1, y1, z1, x2, y2, z2)
 
     def heur_dist(self, x1, y1, x2, y2) -> float:
-            return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            return hypot((x2 - x1), (y2 - y1))
 
     def distance(self, x1, y1, z1, x2, y2, z2) -> float:
-        return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
+        return sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     
     def process_subset(self, sub : pd.DataFrame):
         def heuristic1(node1, node2) -> float:
@@ -147,8 +147,7 @@ class AStar:
                     # find the closest node that is not connected
                 for i, row in sub.iterrows():
                     if not nx.has_path(G, start_node, i):
-                        w = math.sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 
-                                            + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
+                        w = sqrt((sub.loc[start_node, 'x'] - sub.loc[i, 'x'])**2 + (sub.loc[start_node, 'y'] - sub.loc[i, 'y'])**2)
                         G.add_edge(start_node, i, weight=w)
                         break
             
@@ -161,7 +160,7 @@ class AStar:
         s_t = time.time()
         # time_array = np.array([])
 
-        path_points = pd.DataFrame(start.T, columns=["x", "y", "z"])
+        # path_points = pd.DataFrame(start.T, columns=["x", "y", "z"])
 
         # Define the heuristic function for A*
             # add path to path_points
@@ -279,7 +278,7 @@ class AStar:
         p_b = pd.DataFrame(point_b, index=['x', 'y', 'z'])
         points = pd.concat([points, p_a.T, p_b.T], ignore_index=True, axis=0)
         add_end = time.time()
-        print(f"\tAdding start and end points took {round(add_end - add_start, 3)} second")
+        print(f"\tAdding start and end points took {round(add_end - add_start, 3)} seconds")
         # print(f"\tDropping duplicates")
         # drop_start = time.time()
         # points.drop_duplicates(inplace=True)

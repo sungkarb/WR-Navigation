@@ -64,7 +64,6 @@ def main():
         print()
         return start, end
 
-    # start_point, end_point = generate_bounds(points)
     AStar = algorithms.AStar()
 
     print("Finding path . . .")
