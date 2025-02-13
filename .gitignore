@@ -1,2 +1,6 @@
 robotics/
 __pycache__/
+env/
+data/box1.laz
+csv/
+laz/
