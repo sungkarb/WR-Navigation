@@ -17,7 +17,6 @@ with open("settings.json", "r") as f:
     resolution = parameters['resolution']
     height_factor = parameters['height_factor']
     max_slope = parameters['max_slope']
-    slope_factor = parameters['slope_factor']
 
 
     # file paths and names
@@ -108,7 +107,6 @@ class AStar:
     # heuristic function: greater return value means greater cost for the path (best path has low cost)
     def heur(self, x1, y1, z1, x2, y2, z2) -> float:
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + height_factor * (z2 - z1) ** 2)
-        #  + slope_factor * slope_angle(x1, y1, z1, x2, y2, z2)
 
     def heur_dist(self, x1, y1, x2, y2) -> float:
             return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
@@ -116,13 +114,13 @@ class AStar:
     def distance(self, x1, y1, z1, x2, y2, z2) -> float:
         return math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2)
     
+    
     def process_subset(self, sub : pd.DataFrame):
         def heuristic1(node1, node2) -> float:
             x1, y1 = G.nodes[node1]['x'], G.nodes[node1]['y']
             x2, y2 = G.nodes[node2]['x'], G.nodes[node2]['y']
             return AStar.heur_dist(self, x1, y1, x2, y2)
 
-        s_t = time.time()
         #sub = pd.read_csv(os.path.join(subsets_path, f"{subset_name}{k}.csv"))
         G = nx.Graph()
 
@@ -130,7 +128,7 @@ class AStar:
         for i, row in sub.iterrows():
             G.add_node(i, x = row['x'], y = row['y'], z = row['z'])
 
-            # Add edges between the closest nodes (ignoring height)
+        # Add edges between the closest nodes (ignoring height)
         coords = sub[['x', 'y']].values
         tree = spatial.KDTree(coords)
         for i, row in sub.iterrows():
@@ -138,7 +136,7 @@ class AStar:
             for j in range(1, len(indices)):  # skip the first index because it is the point itself
                 G.add_edge(i, indices[j], weight=distances[j])
 
-            # check if the graph is connected
+        # check if the graph is connected
         if not nx.is_connected(G):
                 # start at a node. add an edge to the closest node that is not connected
                 # repeat until the graph is connected
@@ -153,7 +151,7 @@ class AStar:
                         G.add_edge(start_node, i, weight=w)
                         break
             
-            # Find the shortest path using A*
+        # Find the shortest path using A*
         path = nx.astar_path(G, sub.shape[0] - 2, sub.shape[0] - 1, heuristic=heuristic1)
         path = pd.Series(path)
         return sub.loc[path]
@@ -265,7 +263,7 @@ class AStar:
     Returns:
         Path of points through the graph representes as an array with shape (m, 3)
     """
-    def find_path(self, point_a: np.ndarray, point_b: np.ndarray) -> np.ndarray:
+    def find_path(self, point_a: np.ndarray, point_b: np.ndarray, path_path, path_i_path) -> np.ndarray:
         points = pd.read_csv(random_points_path)
         p_a = pd.DataFrame(point_a, index=['x', 'y', 'z'])
         p_b = pd.DataFrame(point_b, index=['x', 'y', 'z'])
@@ -284,5 +282,74 @@ class AStar:
 
         end_time = time.time()
         print(f"\tSaving path took {round(end_time - start_time, 5)} seconds\n")
-
         return path
+    """
+    Returns the Euclidean distance between 2 points
+    """
+    @staticmethod
+    def distanceFinder(p1, p2):
+        return math.sqrt((p1["x"] - p2["x"])**2 + (p1["y"] - p2["y"])**2 + (p1["z"] - p2["z"])**2)
+    
+
+    @staticmethod
+    def removearray(L:list,arr):
+        ind = 0
+        size = len(L)
+        while ind != size and not np.array_equal(L[ind],arr):
+            ind += 1
+        if ind != size:
+            L.pop(ind)
+        else:
+            raise ValueError('array not found in list.')
+    """
+    This function judges which path between points should be found first
+    """
+    def find_closest_points(self, start: np.ndarray, end: np.ndarray, all_points:list = None, 
+                            sorted_points:list = None, point1: np.ndarray = None, point2: np.ndarray = None, 
+                            point3: np.ndarray = None, point4: np.ndarray = None, point5: np.ndarray = None,
+                            point6: np.ndarray = None, point7: np.ndarray = None,  iteration:int = 0) -> list:
+
+        if(iteration == 0):
+            middle_points = [point1, point2, point3, point4, point5, point6, point7]
+
+            valid_middle_points = [point for point in middle_points if point is not None]
+
+            all_points = [start] + valid_middle_points + [end]
+            sorted_points = [start]
+            
+            print("Computing Path for:", all_points)
+
+        if(len(all_points)==1):
+            sorted_points.append(end)
+            sorted_points.pop(0)
+            return sorted_points
+
+        #distances = {point: AStar.distance(sorted_points[-1], point) for point in all_points}
+        distances = {}
+        for point in all_points:
+            distance = AStar.distanceFinder(sorted_points[-1], point)
+            distances.update({distance:point})
+
+
+        min_distance = min(distances.keys())
+        for dist, point in distances.items():
+            if dist == min_distance:
+                closest_point = point
+
+        sorted_points.append(closest_point)
+        AStar.removearray(all_points, closest_point) 
+        # all_points.remove(closest_point)
+
+        return AStar.find_closest_points(self, closest_point, end, all_points, sorted_points, point1, point2, point3, point4, point5, point6, point7, iteration+1)
+
+# test = AStar()
+# start = np.array([0, 0, 0])
+# end = np.array([10, 10, 10])
+# point1 = np.array([3, 4, 4])
+# point2 = np.array([7, 1, 1])
+# point3 = np.array([6, 6, 8])
+# point4 = np.array([2, 2, 3])
+# # point5 = np.array([10, 10, 10])
+# sorted_points_list = test.find_closest_points(start=start, end=end, point1=point1, point2 = point2, point3 = point3, point4 = point4)
+# print("Path computed \n")
+# print(sorted_points_list)
